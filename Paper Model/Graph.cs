@@ -61,21 +61,6 @@ namespace Paper_Model
             }
             return distance;
         }
-        /// <summary>
-        /// creates and initializes an array of nodes 
-        /// </summary>
-        /// <param name="size">the amount of nodes</param>
-        /// <param name="edges">the edges between the nodes</param>
-        /// <returns></returns>
-        public static Node[] createNodeArray(int size, int[] edges)
-        {
-            Node[] nodeArray = new Node[size];
-            for (int i = 0; i < nodeArray.Length; i++)
-                nodeArray[i] = new Node(i);
-            for(int i = 0; i < edges.Length; i+=3)
-                Node.addNeighbors(nodeArray[edges[i]],nodeArray[edges[i+1]],edges[i+2]);
-            return nodeArray;
-        }
     }
     class Node
     {
@@ -104,6 +89,21 @@ namespace Paper_Model
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
+        }
+        /// <summary>
+        /// creates and initializes an array of nodes 
+        /// </summary>
+        /// <param name="size">the amount of nodes</param>
+        /// <param name="edges">the edges between the nodes</param>
+        /// <returns></returns>
+        public static Node[] createNodeArray(int size, int[] edges)
+        {
+            Node[] nodeArray = new Node[size];
+            for (int i = 0; i < nodeArray.Length; i++)
+                nodeArray[i] = new Node(i);
+            for (int i = 0; i < edges.Length; i += 3)
+                Node.addNeighbors(nodeArray[edges[i]], nodeArray[edges[i + 1]], edges[i + 2]);
+            return nodeArray;
         }
     }
 }

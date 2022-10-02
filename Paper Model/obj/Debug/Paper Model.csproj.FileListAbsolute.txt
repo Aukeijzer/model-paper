@@ -12,3 +12,10 @@ C:\Users\auker\Documents\GitHub\model-ovi\Paper Model\obj\Debug\Paper Model.cspr
 C:\Users\auker\Documents\GitHub\model-ovi\Paper Model\obj\Debug\Paper Model.csproj.CoreCompileInputs.cache
 C:\Users\auker\Documents\GitHub\model-ovi\Paper Model\obj\Debug\Paper Model.exe
 C:\Users\auker\Documents\GitHub\model-ovi\Paper Model\obj\Debug\Paper Model.pdb
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.AssemblyReference.cache
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.CoreCompileInputs.cache
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.exe
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.pdb
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.exe.config
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.exe
+C:\Users\auker\Documents\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.pdb
