@@ -31,10 +31,13 @@ namespace Paper_Model
                     distances[i, j] = tree[j];
             }
         }
-
+        public int d(int start, int end)
+        {
+            return distances[start, end];
+        }
         public int d(Node start, Node end)
         {
-            return distances[start.index, end.index];
+            return d(start.index, end.index);
         }
         private int[] minSpanTree(Node node)
         {
@@ -61,49 +64,119 @@ namespace Paper_Model
             }
             return distance;
         }
-    }
-    class Node
-    {
-        public List<Node> neighbors = new List<Node>();
-        public List<int> distance2Neighbor = new List<int>();
-        public int index;
-        public Node(int index)
-        {
-            this.index = index;
-        }
-
-        public void updatedistances(MinHeap heap, int distance)
-        {
-            for(int i = 0; i < neighbors.Count; i++)
-            {
-                int newDistance = distance + distance2Neighbor[i];
-                heap.Update(newDistance, neighbors[i]);
-            }
-        }
-        public static void addNeighbors(Node nodeA, Node nodeB, int distance)
-        {
-            nodeA.addNeighbor(nodeB, distance);
-            nodeB.addNeighbor(nodeA, distance);
-        }
-        private void addNeighbor(Node node,int distance)
-        {
-            neighbors.Add(node);
-            distance2Neighbor.Add(distance);
-        }
         /// <summary>
-        /// creates and initializes an array of nodes 
+        /// Creates a graph of a grid.
         /// </summary>
-        /// <param name="size">the amount of nodes</param>
-        /// <param name="edges">the edges between the nodes</param>
-        /// <returns></returns>
-        public static Node[] createNodeArray(int size, int[] edges)
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="distance"></param>
+        public Graph(int width, int height, int distance)
         {
-            Node[] nodeArray = new Node[size];
-            for (int i = 0; i < nodeArray.Length; i++)
-                nodeArray[i] = new Node(i);
-            for (int i = 0; i < edges.Length; i += 3)
-                Node.addNeighbors(nodeArray[edges[i]], nodeArray[edges[i + 1]], edges[i + 2]);
-            return nodeArray;
+            int size = width * height;
+            List<int> edges = new List<int>();
+            
+            //adding edges between all top left nodes
+            for(int x = 0; x<width-1;x++)
+                for(int y = 0; y < height-1; y++)
+                {
+                    int thisNode = y * width + x;
+                    edges.Add(thisNode);
+                    edges.Add(thisNode + 1);
+                    edges.Add(distance);
+
+                    edges.Add(thisNode);
+                    edges.Add(thisNode + width);
+                    edges.Add(distance);
+                }
+            //adding eddges to bottom row
+            for(int x=0; x < width-1; x++)
+            {
+                int thisNode = width * (height - 1) + x;
+                edges.Add(thisNode);
+                edges.Add(thisNode + 1);
+                edges.Add(distance);
+            }
+            //adding edges to right column
+            for(int y=0; y < height-1;y++)
+            {
+                int thisNode = y * height + (width - 1);
+                edges.Add(thisNode);
+                edges.Add(thisNode + width);
+                edges.Add(distance);
+            }
+            nodes = Node.createNodeArray(size, edges.ToArray());
+            Initialize();
+        }
+        /* current idea for calculating way of moving
+         * have 3 graphs: 1 for walking, 1 for cycling, 1 for driving (these are identical).
+         * Make connections between the walking and cycling/driving graphs at the points where cars/bikes are available
+         * dont really know how to do this efficiently
+        */
+        class World
+        {
+            private WorldNode[] nodes;
+            private int[] pull;
+            private int[] push;
+            Random random = new Random();
+            //havent really tested yet
+            public void tick()
+            {
+                movePeople(20);
+                updatePushPull();
+            }
+            private void updatePushPull()
+            {
+                for(int i = 0; i < nodes.Length; i++)
+                {
+                    pull[i] = random.Next(10);
+                    push[i] = random.Next(10);
+                }
+            }
+            private void movePeople(int amount)
+            {
+                int maxPull = pull.Sum();
+                int[] realPush = new int[push.Length];
+                for (int i = 0; i < push.Length; i++)
+                    realPush[i] = push[i] * nodes[i].people;
+                int maxPush = realPush.Sum();
+                for(int i = 0; i<amount;i++)
+                {
+                    int origin = highestCulmative(realPush, random.Next(maxPush));
+                    realPush[origin] -= push[i];
+                    maxPush -= push[i];
+                    int destination = highestCulmative(pull, random.Next(maxPull));
+                    //TODO: MAYBE DO SOMETHING ELSE HERE
+                    Console.WriteLine("Moved from " + origin.ToString() + "to " + destination.ToString());
+                    nodes[origin].people--;
+                    nodes[destination].people++;
+                }
+            }
+            /// <summary>
+            /// Returns the index for the highest possible culmative value in the list lower then the bound
+            /// </summary>
+            /// <param name="list"></param>
+            /// <param name="bound"></param>
+            /// <returns></returns>
+            private static int highestCulmative(int[] list, int bound)
+            {
+                int index = int.MaxValue;
+                bool found = false;
+                int i = 0;
+                while(!found)
+                {
+                    if (bound < list[i])
+                    {
+                        index = i - 1;
+                        found = true;
+                    }
+                    else
+                    {
+                        bound -= list[i];
+                        i++;
+                    }
+                }
+                return index;
+            }
         }
     }
 }
