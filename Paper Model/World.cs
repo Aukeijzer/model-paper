@@ -14,8 +14,10 @@ namespace Paper_Model
     class World
     {
         private WorldNode[] nodes;
+        //The weight a node has in regards to getting people to move to that node
         private int[] pull;
-        private int[] push;
+        //The chance a person has to move away from that node.
+        double[] push;
         Random random = new Random();
 
         private Graph walking;
@@ -55,21 +57,15 @@ namespace Paper_Model
         {
             List<Log> logs = new List<Log>();
             int maxPull = pull.Sum();
-            //TODO: push probably needs to be reworked.
-            int[] realPush = new int[push.Length];
-            for (int i = 0; i < push.Length; i++)
-                realPush[i] = push[i] * nodes[i].people;
-            int maxPush = realPush.Sum();
-            int amount = maxPush * factor / 10;
-            for (int i = 0; i < amount; i++)
-            {
-                int origin = highestCulmative(realPush, random.Next(maxPush));
-                //Remove the push the person provided.
-                realPush[origin] -= push[i];
-                maxPush -= push[i];
-                int destination = highestCulmative(pull, random.Next(maxPull));
-                logs.Add(movePerson(origin, destination));
-            }
+
+            for(int i = 0; i < push.Length; i++)
+                for(int j = 0; j < nodes[i].people; j++)
+                    if(random.NextDouble()<push[i])
+                    {
+                        int destination = highestCulmative(pull, random.Next(maxPull));
+                        logs.Add(movePerson(i, destination));
+                    }
+
             return logs;
         }
         private Log movePerson(int origin, int destination)
