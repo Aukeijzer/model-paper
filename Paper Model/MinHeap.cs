@@ -47,7 +47,7 @@ namespace Paper_Model
         {
             //heap is empty
             if (size == 0)
-                return (int.MaxValue, null);
+                return (float.MaxValue, null);
 
             var tuple = Peek();
 
