@@ -25,8 +25,8 @@ namespace Paper_Model
         {
             walking = distances;
             //TODO: add factors
-            cycling = distances.scaleGraph(0.2f);
-            driving = distances.scaleGraph(0.1f);
+            cycling = distances.ScaleGraph(0.2f);
+            driving = distances.ScaleGraph(0.1f);
         }
         //havent really tested yet
         public List<Log> Tick()
@@ -44,6 +44,7 @@ namespace Paper_Model
         }
         public struct Log
         {
+            List<Node> path;
 
         }
         private List<Log> movePeople()
@@ -73,6 +74,16 @@ namespace Paper_Model
         }
         private Log movePerson(int origin, int destination)
         {
+            List<int> bikePoints = new List<int>();
+            List<int> carPoints = new List<int>();
+            for(int i = 0;i<nodes.Length;i++)
+            {
+                WorldNode node = nodes[i];
+                if (node.bikes != 0)
+                    bikePoints.Add(node.index);
+                if (node.cars != 0)
+                    carPoints.Add(node.index);
+            }
             nodes[origin].people--;
             nodes[destination].people++;
             return default;

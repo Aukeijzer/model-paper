@@ -24,7 +24,7 @@ namespace Paper_Model
             this.nodes = nodes;
             this.distances = distances;
         }
-        public Graph scaleGraph(float scale)
+        public Graph ScaleGraph(float scale)
         {
             float[,] newDistances = new float[length, length];
             for (int x = 0; x < length; x++)
@@ -81,10 +81,7 @@ namespace Paper_Model
         {
             //set the distance between all nodes as infinity
             distances = new float[nodes.Length, nodes.Length];
-            for (int i = 0; i < nodes.Length; i++)
-                for (int j = 0; j < nodes.Length; j++)
-                    distances[i, j] = float.MaxValue;
-            //calculate the minimum spanning tree for all nodes
+
             for (int i = 0; i < nodes.Length; i++)
             {
                 float[] tree = minSpanTree(nodes[i]);
@@ -100,15 +97,20 @@ namespace Paper_Model
         {
             return d(start.index, end.index);
         }
+        private MinHeap createMinHeap(Node node)
+        {
+            MinHeap heap = new MinHeap();
+            for (int i = 0; i < nodes.Length; i++)
+                heap.Insert(float.MaxValue, nodes[i]);
+            heap.Update(0, node);
+            return heap;
+        }
         private float[] minSpanTree(Node node)
         {
             float[] distance = new float[nodes.Length];
             for (int i = 0; i < distance.Length; i++)
                 distance[i] = float.MaxValue;
-            MinHeap heap = new MinHeap();
-            for (int i = 0; i < nodes.Length; i++)
-                heap.Insert(float.MaxValue, nodes[i]);
-            heap.Update(0, node);
+            MinHeap heap = createMinHeap(node);
             bool finished = false;
             while (!finished)
             {
@@ -124,6 +126,18 @@ namespace Paper_Model
 
             }
             return distance;
+        }
+        
+        private List<Node> getPath(int start, int end)
+        {
+            Node startNode = nodes[start];
+            MinHeap heap = createMinHeap(startNode);
+            return default;
+        }
+        
+        private List<Node> getPath(Node start, Node end)
+        {
+            return getPath(start.index, end.index);
         }
     }
 }
