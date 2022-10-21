@@ -8,29 +8,36 @@ namespace Paper_Model
 {
     class Graph
     {
-        public int length;
+        public int Length;
         Node[] nodes;
         float[,] distances;
-
+        /// <summary>
+        /// Note that this graph still needs to be initialized.
+        /// </summary>
+        /// <param name="nodes"></param>
         public Graph(Node[] nodes)
         {
             this.nodes = nodes;
-            length = nodes.Length;
-            Initialize();
+            Length = nodes.Length;
+            //set the distance between all nodes as infinity
+            distances = new float[Length, Length];
+            for (int x = 0; x < Length; x++)
+                for (int y = 0; y < Length; y++)
+                    distances[x, y] = float.MaxValue;
         }
         public Graph(int length, Node[] nodes, float[,] distances)
         {
-            this.length = length;
+            this.Length = length;
             this.nodes = nodes;
             this.distances = distances;
         }
         public Graph ScaleGraph(float scale)
         {
-            float[,] newDistances = new float[length, length];
-            for (int x = 0; x < length; x++)
-                for (int y = 0; y < length; y++)
+            float[,] newDistances = new float[Length, Length];
+            for (int x = 0; x < Length; x++)
+                for (int y = 0; y < Length; y++)
                     newDistances[x, y] = distances[x, y] * scale;
-            return new Graph(length, nodes, distances);
+            return new Graph(Length, nodes, distances);
         }
         /// <summary>
         /// Creates a graph of a grid.
@@ -40,7 +47,11 @@ namespace Paper_Model
         /// <param name="distance"></param>
         public Graph(int width, int height, float distance)
         {
-            length = width * height;
+            Length = width * height;
+            distances = new float[Length, Length];
+            for (int x = 0; x < Length; x++)
+                for (int y = 0; y < Length; y++)
+                    distances[x, y] = float.MaxValue;
             List<int> start = new List<int>();
             List<int> end = new List<int>();
             List<float> lengths = new List<float>();
@@ -73,15 +84,12 @@ namespace Paper_Model
                 end.Add(thisNode + width);
                 lengths.Add(distance);
             }
-            nodes = Node.createNodeArray(length, start.ToArray(),end.ToArray(),lengths.ToArray());
+            nodes = Node.createNodeArray(Length, start.ToArray(),end.ToArray(),lengths.ToArray());
             Initialize();
         }
 
-        private void Initialize()
+        public void Initialize()
         {
-            //set the distance between all nodes as infinity
-            distances = new float[nodes.Length, nodes.Length];
-
             for (int i = 0; i < nodes.Length; i++)
             {
                 float[] tree = minSpanTree(nodes[i]);
@@ -97,7 +105,7 @@ namespace Paper_Model
         {
             return d(start.index, end.index);
         }
-        private MinHeap createMinHeap(Node node)
+        private static MinHeap createMinHeap(Node node, Node[] nodes)
         {
             MinHeap heap = new MinHeap();
             for (int i = 0; i < nodes.Length; i++)
@@ -110,7 +118,7 @@ namespace Paper_Model
             float[] distance = new float[nodes.Length];
             for (int i = 0; i < distance.Length; i++)
                 distance[i] = float.MaxValue;
-            MinHeap heap = createMinHeap(node);
+            MinHeap heap = createMinHeap(node,nodes);
             bool finished = false;
             while (!finished)
             {
@@ -127,8 +135,38 @@ namespace Paper_Model
             }
             return distance;
         }
-        
-        public List<Node> getPath(int start, int end)
+        /// <summary>
+        /// Generates a Min
+        /// </summary>
+        /// <param name="nodes"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public void LazyMinSpanTree(int start, int end)
+        {
+            //This code is shamelessly copy pasted and could possibly be improved.
+            float[] distance = new float[nodes.Length];
+            for (int i = 0; i < distance.Length; i++)
+                distance[i] = float.MaxValue;
+            MinHeap heap = createMinHeap(nodes[start],nodes);
+            bool finished = false;
+            while (!finished)
+            {
+                (float minD, Node minNode) = heap.Pop();
+                //Can't reach any more nodes.
+                if (minNode.index == end)
+                    finished = true;
+                else
+                {
+                    distance[minNode.index] = minD;
+                    minNode.updatedistances(heap, minD);
+                }
+
+            }
+            for (int i = 0; i < Length; i++)
+                distances[start, i] = distance[i];
+        }
+        public List<Node> GetPath(int start, int end)
         {
             List<Node> path = new List<Node>();
             path.Add(nodes[end]);
@@ -147,9 +185,9 @@ namespace Paper_Model
             return path;
         }
 
-        public List<Node> getPath(Node start, Node end)
+        public List<Node> GetPath(Node start, Node end)
         {
-            return getPath(start.index, end.index);
+            return GetPath(start.index, end.index);
         }
     }
 }

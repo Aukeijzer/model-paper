@@ -26,7 +26,7 @@ namespace Paper_Model
         //    Console.ReadLine();
             Graph graph2 = new Graph(10, 10, 10);
             Console.WriteLine(graph2.d(5, 55).ToString());
-            List<Node> path = graph2.getPath(5, 55);
+            List<Node> path = graph2.GetPath(5, 55);
             Console.WriteLine(Node.PrintList(path));
             Console.ReadLine();
         }

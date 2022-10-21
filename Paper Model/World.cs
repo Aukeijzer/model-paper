@@ -10,6 +10,8 @@ namespace Paper_Model
     {
         private int size;
         private WorldNode[] nodes;
+        private WorldNode[] bikeParkingNode;
+        private WorldNode[] carParkNode;
         //The weight a node has in regards to getting people to move to that node
         private int[] pull;
         //The chance a person has to move away from that node.
@@ -44,7 +46,14 @@ namespace Paper_Model
         }
         public struct Log
         {
-            List<Node> path;
+            public List<Node> path;
+            public float effort;
+
+            public Log(List<Node> path, float effort)
+            {
+                this.path = path;
+                this.effort = effort;
+            }
         }
         private List<Log> movePeople()
         {
@@ -85,26 +94,77 @@ namespace Paper_Model
             List<int> start = new List<int>();
             List<int> end = new List<int>();
             List<float> lengths = new List<float>();
-            //add walking distance.
+            //walking from start to destination
             start.Add(origin);
             end.Add(destination);
             lengths.Add(walking.d(origin, destination));
             for(int i = 0; i<carPoints.Count;i++)
             {
-                //walking to car
+                //walking to a car
                 start.Add(origin);
-                start.Add(carPoints[i]);
+                end.Add(carPoints[i]);
                 lengths.Add(walking.d(origin, carPoints[i]));
-
-                //TODO: add edges between car and all carpoints
-                // also need to add the walking distance from all carpoints to all other carpoints and bikepoints, etc.
-                // havent really figured out what needs to be added yet to get the minimum effort.
+                //driving to carpark
+                for(int j = 0; j < bikeParkingNode.Length; j++)
+                {
+                    int endIndex = bikeParkingNode[j].index;
+                    start.Add(carPoints[i]);
+                    end.Add(endIndex);
+                    lengths.Add(driving.d(carPoints[i], endIndex));
+                }
             }
+            for (int i = 0; i < bikePoints.Count; i++)
+            {
+                //walking to a bike
+                start.Add(origin);
+                end.Add(bikePoints[i]);
+                lengths.Add(walking.d(origin, bikePoints[i]));
+                //cycling to bikePark
+                for (int j = 0; j < nodes.Length; j++)
+                {
+                    start.Add(bikePoints[i]);
+                    end.Add(j);
+                    lengths.Add(driving.d(bikePoints[i], j));
+                }
+            }
+
+            for(int i =0; i < bikeParkingNode.Length;i++)
+            {
+                int bikeParkIndex = bikeParkingNode[i].index;
+                //walking from bikepark to destination
+                start.Add(bikeParkIndex);
+                end.Add(destination);
+                lengths.Add(walking.d(bikeParkIndex, destination));
+                //walking from bikepark to carpark
+                for(int j = 0; j<carParkNode.Length; j++)
+                {
+                    int carParkIndex = carParkNode[i].index;
+                    start.Add(bikeParkIndex);
+                    end.Add(carParkIndex);
+                    lengths.Add(walking.d(bikeParkIndex, destination));
+                }
+            }
+
+            for (int i = 0; i < carParkNode.Length; i++)
+            {
+                //walking from carpark to destination
+                int carParkIndex = bikeParkingNode[i].index;
+                start.Add(carParkIndex);
+                end.Add(destination);
+                lengths.Add(walking.d(carParkIndex, destination));
+            }
+
             Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
             Graph effortGraph = new Graph(nodeArray);
+            effortGraph.LazyMinSpanTree(origin, destination);
+
+            float effort = effortGraph.d(origin, destination);
+            List<Node> path = effortGraph.GetPath(origin, destination);
+            Log log = new Log(path, effort);
+
             nodes[origin].people.Remove(person);
             nodes[destination].people.Add(person);
-            return default;
+            return log;
         }
         /// <summary>
         /// Returns the index for the highest possible culmative value in the list lower then the bound
