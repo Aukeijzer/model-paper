@@ -83,10 +83,10 @@ namespace Paper_Model
                     distance[i]);
             return nodeArray;
         }
-        public Node getPrevious(int start,float[,] distances)
+        public Node getPrevious(int start, float[,] distances)
         {
             float distance = distances[start, index];
-            for (int i =0; true; i++)
+            for (int i = 0; true; i++)
             {
                 int neighbor = neighbors[i].index;
                 float neighbor2This = distances[start, neighbor] + distance2Neighbor[i];
@@ -94,15 +94,5 @@ namespace Paper_Model
                     return neighbors[i];
             }
         }
-    }
-    class WorldNode : Node
-    {
-        public WorldNode(int index) : base(index) 
-        {
-        }
-        public int people;
-        public int bikes;
-        public int cars;
-
     }
 }

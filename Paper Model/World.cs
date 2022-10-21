@@ -6,13 +6,9 @@ using System.Threading.Tasks;
 
 namespace Paper_Model
 {
-    /* current idea for calculating way of moving
-     * have 3 graphs: 1 for walking, 1 for cycling, 1 for driving (these are identical).
-     * Make connections between the walking and cycling/driving graphs at the points where cars/bikes are available
-     * dont really know how to do this efficiently
-    */
     class World
     {
+        private int size;
         private WorldNode[] nodes;
         //The weight a node has in regards to getting people to move to that node
         private int[] pull;
@@ -23,10 +19,12 @@ namespace Paper_Model
         private Graph walking;
         private Graph cycling;
         private Graph driving;
+        //TODO the generation of a world isnt 
         public World(Graph distances)
         {
-            walking = distances;
+            //TODO: add worldnodes
             //TODO: add factors
+            walking = distances.ScaleGraph(1);
             cycling = distances.ScaleGraph(0.2f);
             driving = distances.ScaleGraph(0.1f);
         }
@@ -41,13 +39,12 @@ namespace Paper_Model
             for (int i = 0; i < nodes.Length; i++)
             {
                 pull[i] = random.Next(10);
-                push[i] = random.Next(10);
+                push[i] = random.NextDouble();
             }
         }
         public struct Log
         {
             List<Node> path;
-
         }
         private List<Log> movePeople()
         {
@@ -59,29 +56,54 @@ namespace Paper_Model
             int maxPull = pull.Sum();
 
             for(int i = 0; i < push.Length; i++)
-                for(int j = 0; j < nodes[i].people; j++)
-                    if(random.NextDouble()<push[i])
+            {
+                WorldNode node = nodes[i];
+                //for every person in the node roll if they will move to a different one.
+                for (int j = 0; j < node.people.Count; j++)
+                    if (random.NextDouble() < push[i])
                     {
                         int destination = highestCulmative(pull, random.Next(maxPull));
-                        logs.Add(movePerson(i, destination));
+                        logs.Add(movePerson(i, destination, node.people[j]));
                     }
+            }
+
 
             return logs;
         }
-        private Log movePerson(int origin, int destination)
+        /// <summary>
+        /// TODO: create graph 
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="destination"></param>
+        /// <param name="person"></param>
+        /// <returns></returns>
+        private Log movePerson(int origin, int destination, Person person)
         {
-            List<int> bikePoints = new List<int>();
-            List<int> carPoints = new List<int>();
-            for(int i = 0;i<nodes.Length;i++)
+            List<int> bikePoints = person.getBikes();
+            List<int> carPoints = person.getCars();
+            //Creating new graph
+            List<int> start = new List<int>();
+            List<int> end = new List<int>();
+            List<float> lengths = new List<float>();
+            //add walking distance.
+            start.Add(origin);
+            end.Add(destination);
+            lengths.Add(walking.d(origin, destination));
+            for(int i = 0; i<carPoints.Count;i++)
             {
-                WorldNode node = nodes[i];
-                if (node.bikes != 0)
-                    bikePoints.Add(node.index);
-                if (node.cars != 0)
-                    carPoints.Add(node.index);
+                //walking to car
+                start.Add(origin);
+                start.Add(carPoints[i]);
+                lengths.Add(walking.d(origin, carPoints[i]));
+
+                //TODO: add edges between car and all carpoints
+                // also need to add the walking distance from all carpoints to all other carpoints and bikepoints, etc.
+                // havent really figured out what needs to be added yet to get the minimum effort.
             }
-            nodes[origin].people--;
-            nodes[destination].people++;
+            Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
+            Graph effortGraph = new Graph(nodeArray);
+            nodes[origin].people.Remove(person);
+            nodes[destination].people.Add(person);
             return default;
         }
         /// <summary>
