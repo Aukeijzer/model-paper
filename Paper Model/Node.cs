@@ -9,33 +9,33 @@ namespace Paper_Model
     class Node
     {
         public List<Node> neighbors = new List<Node>();
-        protected List<int> distance2Neighbor = new List<int>();
+        protected List<float> distance2Neighbor = new List<float>();
         public int index;
         public Node(int index)
         {
             this.index = index;
         }
 
-        public void updatedistances(MinHeap heap, int distance)
+        public void updatedistances(MinHeap heap, float distance)
         {
             for (int i = 0; i < neighbors.Count; i++)
             {
-                int newDistance = distance + distance2Neighbor[i];
+                float newDistance = distance + distance2Neighbor[i];
                 heap.Update(newDistance, neighbors[i]);
             }
         }
-        public static void addNeighbors(Node nodeA, Node nodeB, int distance)
+        public static void addNeighbors(Node nodeA, Node nodeB, float distance)
         {
             nodeA.addNeighbor(nodeB, distance);
             nodeB.addNeighbor(nodeA, distance);
         }
-        protected void addNeighbor(Node node, int distance)
+        protected void addNeighbor(Node node, float distance)
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
         }
         /// <summary>
-        /// creates and initializes an array of nodes 
+        /// outdated function
         /// </summary>
         /// <param name="size">the amount of nodes</param>
         /// <param name="edges">the edges between the nodes</param>
@@ -46,7 +46,30 @@ namespace Paper_Model
             for (int i = 0; i < nodeArray.Length; i++)
                 nodeArray[i] = new Node(i);
             for (int i = 0; i < edges.Length; i += 3)
-                Node.addNeighbors(nodeArray[edges[i]], nodeArray[edges[i + 1]], edges[i + 2]);
+                Node.addNeighbors(
+                    nodeArray[edges[i]],
+                    nodeArray[edges[i + 1]],
+                    edges[i + 2]);
+            return nodeArray;
+        }
+        /// <summary>
+        /// creates and initializes an array of nodes.
+        /// </summary>
+        /// <param name="size">the amount of nodes</param>
+        /// <param name="start">startpoint of an edge</param>
+        /// <param name="end">end point of an edge</param>
+        /// <param name="distance">lenght of edge</param>
+        /// <returns></returns>
+        public static Node[] createNodeArray(int size, int[] start, int[] end, float[] distance)
+        {
+            Node[] nodeArray = new Node[size];
+            for (int i = 0; i < size; i++)
+                nodeArray[i] = new Node(i);
+            for (int i = 0; i < start.Length; i++)
+                Node.addNeighbors(
+                    nodeArray[start[i]],
+                    nodeArray[end[i]],
+                    distance[i]);
             return nodeArray;
         }
     }

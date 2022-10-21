@@ -10,7 +10,7 @@ namespace Paper_Model
     /// </summary>
     class MinHeap
     {
-        private List<int> distances;
+        private List<float> distances;
         private List<Node> nodes;
         private int size;
 
@@ -19,12 +19,12 @@ namespace Paper_Model
 
         public MinHeap()
         {
-            distances = new List<int> { int.MaxValue };
+            distances = new List<float> { float.MaxValue };
             nodes = new List<Node> { null };
             size = 0;
             keys = new List<int>();
         }
-        public MinHeap(List<int> distances, List<Node> nodes) : this()
+        public MinHeap(List<float> distances, List<Node> nodes) : this()
         {
             this.distances.AddRange(distances);
             this.nodes.AddRange(nodes);
@@ -35,7 +35,7 @@ namespace Paper_Model
         /// <summary>
         /// Returns the lowest value.
         /// </summary>
-        public (int,Node) Peek()
+        public (float,Node) Peek()
         {
             return (distances[1], nodes[1]);
         }
@@ -43,7 +43,7 @@ namespace Paper_Model
         /// Removes and returns the lowest value.
         /// </summary>
         /// <returns></returns>
-        public (int, Node) Pop()
+        public (float, Node) Pop()
         {
             //heap is empty
             if (size == 0)
@@ -66,7 +66,7 @@ namespace Paper_Model
         /// </summary>
         /// <param name="distance"></param>
         /// <param name="node"></param>
-        public void Insert(int distance, Node node)
+        public void Insert(float distance, Node node)
         {
             distances.Add(distance);
             nodes.Add(node);
@@ -79,7 +79,7 @@ namespace Paper_Model
         /// </summary>
         /// <param name="value"></param>
         /// <param name="key"></param>
-        public void Update(int value, Node node)
+        public void Update(float value, Node node)
         {
             int key = keys[node.index];
             if ( key <= size && distances[key] > value)

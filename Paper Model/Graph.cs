@@ -8,52 +8,113 @@ namespace Paper_Model
 {
     class Graph
     {
+        public int length;
         Node[] nodes;
-        int[,] distances;
+        float[,] distances;
 
         public Graph(Node[] nodes)
         {
             this.nodes = nodes;
+            length = nodes.Length;
             Initialize();
         }
+        public Graph(int length, Node[] nodes, float[,] distances)
+        {
+            this.length = length;
+            this.nodes = nodes;
+            this.distances = distances;
+        }
+        public Graph scaleGraph(float scale)
+        {
+            float[,] newDistances = new float[length, length];
+            for (int x = 0; x < length; x++)
+                for (int y = 0; y < length; y++)
+                    newDistances[x, y] = distances[x, y] * scale;
+            return new Graph(length, nodes, distances);
+        }
+        /// <summary>
+        /// Creates a graph of a grid.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="distance"></param>
+        public Graph(int width, int height, float distance)
+        {
+            length = width * height;
+            List<int> start = new List<int>();
+            List<int> end = new List<int>();
+            List<float> lengths = new List<float>();
+            //adding edges between all top left nodes
+            for (int x = 0; x < width - 1; x++)
+                for (int y = 0; y < height - 1; y++)
+                {
+                    int thisNode = y * width + x;
+                    start.Add(thisNode);
+                    end.Add(thisNode + 1);
+                    lengths.Add(distance);
+
+                    start.Add(thisNode);
+                    end.Add(thisNode + width);
+                    lengths.Add(distance);
+                }
+            //adding eddges to bottom row
+            for (int x = 0; x < width - 1; x++)
+            {
+                int thisNode = width * (height - 1) + x;
+                start.Add(thisNode);
+                end.Add(thisNode + 1);
+                lengths.Add(distance);
+            }
+            //adding edges to right column
+            for (int y = 0; y < height - 1; y++)
+            {
+                int thisNode = y * height + (width - 1);
+                start.Add(thisNode);
+                end.Add(thisNode + width);
+                lengths.Add(distance);
+            }
+            nodes = Node.createNodeArray(length, start.ToArray(),end.ToArray(),lengths.ToArray());
+            Initialize();
+        }
+
         private void Initialize()
         {
             //set the distance between all nodes as infinity
-            distances = new int[nodes.Length, nodes.Length];
+            distances = new float[nodes.Length, nodes.Length];
             for (int i = 0; i < nodes.Length; i++)
                 for (int j = 0; j < nodes.Length; j++)
-                    distances[i, j] = int.MaxValue;
+                    distances[i, j] = float.MaxValue;
             //calculate the minimum spanning tree for all nodes
-            for(int i = 0; i < nodes.Length; i++)
+            for (int i = 0; i < nodes.Length; i++)
             {
-                int[] tree = minSpanTree(nodes[i]);
+                float[] tree = minSpanTree(nodes[i]);
                 for (int j = 0; j < nodes.Length; j++)
                     distances[i, j] = tree[j];
             }
         }
-        public int d(int start, int end)
+        public float d(int start, int end)
         {
             return distances[start, end];
         }
-        public int d(Node start, Node end)
+        public float d(Node start, Node end)
         {
             return d(start.index, end.index);
         }
-        private int[] minSpanTree(Node node)
+        private float[] minSpanTree(Node node)
         {
-            int[] distance = new int[nodes.Length];
+            float[] distance = new float[nodes.Length];
             for (int i = 0; i < distance.Length; i++)
-                distance[i] = int.MaxValue;
+                distance[i] = float.MaxValue;
             MinHeap heap = new MinHeap();
             for (int i = 0; i < nodes.Length; i++)
-                heap.Insert(int.MaxValue, nodes[i]);
+                heap.Insert(float.MaxValue, nodes[i]);
             heap.Update(0, node);
             bool finished = false;
             while (!finished)
             {
-                (int minD, Node minNode) = heap.Pop();
+                (float minD, Node minNode) = heap.Pop();
                 //Can't reach any more nodes.
-                if (minD == int.MaxValue)
+                if (minD == float.MaxValue)
                     finished = true;
                 else
                 {
@@ -63,120 +124,6 @@ namespace Paper_Model
 
             }
             return distance;
-        }
-        /// <summary>
-        /// Creates a graph of a grid.
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="distance"></param>
-        public Graph(int width, int height, int distance)
-        {
-            int size = width * height;
-            List<int> edges = new List<int>();
-            
-            //adding edges between all top left nodes
-            for(int x = 0; x<width-1;x++)
-                for(int y = 0; y < height-1; y++)
-                {
-                    int thisNode = y * width + x;
-                    edges.Add(thisNode);
-                    edges.Add(thisNode + 1);
-                    edges.Add(distance);
-
-                    edges.Add(thisNode);
-                    edges.Add(thisNode + width);
-                    edges.Add(distance);
-                }
-            //adding eddges to bottom row
-            for(int x=0; x < width-1; x++)
-            {
-                int thisNode = width * (height - 1) + x;
-                edges.Add(thisNode);
-                edges.Add(thisNode + 1);
-                edges.Add(distance);
-            }
-            //adding edges to right column
-            for(int y=0; y < height-1;y++)
-            {
-                int thisNode = y * height + (width - 1);
-                edges.Add(thisNode);
-                edges.Add(thisNode + width);
-                edges.Add(distance);
-            }
-            nodes = Node.createNodeArray(size, edges.ToArray());
-            Initialize();
-        }
-        /* current idea for calculating way of moving
-         * have 3 graphs: 1 for walking, 1 for cycling, 1 for driving (these are identical).
-         * Make connections between the walking and cycling/driving graphs at the points where cars/bikes are available
-         * dont really know how to do this efficiently
-        */
-        class World
-        {
-            private WorldNode[] nodes;
-            private int[] pull;
-            private int[] push;
-            Random random = new Random();
-            //havent really tested yet
-            public void tick()
-            {
-                movePeople(20);
-                updatePushPull();
-            }
-            private void updatePushPull()
-            {
-                for(int i = 0; i < nodes.Length; i++)
-                {
-                    pull[i] = random.Next(10);
-                    push[i] = random.Next(10);
-                }
-            }
-            private void movePeople(int amount)
-            {
-                int maxPull = pull.Sum();
-                int[] realPush = new int[push.Length];
-                for (int i = 0; i < push.Length; i++)
-                    realPush[i] = push[i] * nodes[i].people;
-                int maxPush = realPush.Sum();
-                for(int i = 0; i<amount;i++)
-                {
-                    int origin = highestCulmative(realPush, random.Next(maxPush));
-                    realPush[origin] -= push[i];
-                    maxPush -= push[i];
-                    int destination = highestCulmative(pull, random.Next(maxPull));
-                    //TODO: MAYBE DO SOMETHING ELSE HERE
-                    Console.WriteLine("Moved from " + origin.ToString() + "to " + destination.ToString());
-                    nodes[origin].people--;
-                    nodes[destination].people++;
-                }
-            }
-            /// <summary>
-            /// Returns the index for the highest possible culmative value in the list lower then the bound
-            /// </summary>
-            /// <param name="list"></param>
-            /// <param name="bound"></param>
-            /// <returns></returns>
-            private static int highestCulmative(int[] list, int bound)
-            {
-                int index = int.MaxValue;
-                bool found = false;
-                int i = 0;
-                while(!found)
-                {
-                    if (bound < list[i])
-                    {
-                        index = i - 1;
-                        found = true;
-                    }
-                    else
-                    {
-                        bound -= list[i];
-                        i++;
-                    }
-                }
-                return index;
-            }
         }
     }
 }
