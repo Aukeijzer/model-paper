@@ -11,6 +11,17 @@ namespace Paper_Model
         public List<Node> neighbors = new List<Node>();
         protected List<float> distance2Neighbor = new List<float>();
         public int index;
+        public override string ToString()
+        {
+            return index.ToString();
+        }
+        public static string PrintList(List<Node> nodes)
+        {
+            string s = "";
+            for (int i = 0; i < nodes.Count; i++)
+                s += nodes[i].ToString() + " ";
+            return s;
+        }
         public Node(int index)
         {
             this.index = index;
@@ -71,6 +82,17 @@ namespace Paper_Model
                     nodeArray[end[i]],
                     distance[i]);
             return nodeArray;
+        }
+        public Node getPrevious(int start,float[,] distances)
+        {
+            float distance = distances[start, index];
+            for (int i =0; true; i++)
+            {
+                int neighbor = neighbors[i].index;
+                float neighbor2This = distances[start, neighbor] + distance2Neighbor[i];
+                if (neighbor2This == distance)
+                    return neighbors[i];
+            }
         }
     }
     class WorldNode : Node

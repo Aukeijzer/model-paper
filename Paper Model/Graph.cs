@@ -128,14 +128,26 @@ namespace Paper_Model
             return distance;
         }
         
-        private List<Node> getPath(int start, int end)
+        public List<Node> getPath(int start, int end)
         {
-            Node startNode = nodes[start];
-            MinHeap heap = createMinHeap(startNode);
-            return default;
+            List<Node> path = new List<Node>();
+            path.Add(nodes[end]);
+            float distance = distances[start, end];
+            Node nextNode = path[path.Count - 1];
+            while (distance > 0)
+            {
+                path.Add(nextNode.getPrevious(start,distances));
+                nextNode = path[path.Count - 1];
+                distance = distances[start, nextNode.index];
+            }
+            if (path.Count == 0)
+                path.Add(nodes[start]);
+            else
+                path.Reverse();
+            return path;
         }
-        
-        private List<Node> getPath(Node start, Node end)
+
+        public List<Node> getPath(Node start, Node end)
         {
             return getPath(start.index, end.index);
         }
