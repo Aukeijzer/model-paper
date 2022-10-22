@@ -239,39 +239,8 @@ namespace Paper_Model
             for(int i = 0; i<path.Count-2 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
-                int startI = start.index;
                 WorldNode end = nodes[path[i + 1].index];
-                int endI = end.index;
-                Vehicle vehicle = new Legs();
-                float effort = effortCost(startI,end.index);
-                if (end.carPark)
-                {
-                    List<Car> cars = person.getSpecificVehicle<Car>();
-                    for (int j = 0; j < cars.Count; j++)
-                        if (!cars[j].moving && cars[j].location==startI)
-                        {
-                            float newEffort = effortCost(startI, endI,cars[j]);
-                            if (newEffort < effort)
-                            {
-                                effort = newEffort;
-                                vehicle = cars[j];
-                            }
-                        }
-                }
-                if (end.bikePark)
-                {
-                    List<Bike> bikes = person.getSpecificVehicle<Bike>();
-                    for (int j = 0; j < bikes.Count; j++)
-                        if (!bikes[j].moving && bikes[j].location == startI)
-                        {
-                            float newEffort = effortCost(startI, endI, bikes[j]);
-                            if (newEffort < effort)
-                            {
-                                effort = newEffort;
-                                vehicle = bikes[j];
-                            }
-                        }
-                }
+                (float effort, Vehicle vehicle) = determineTravelType(start, end, person);
                 vehicles.Add(vehicle);
             }
             Log log = new Log(path, totalEffort,vehicles,person);
