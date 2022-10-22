@@ -9,7 +9,7 @@ namespace Paper_Model
     class Node
     {
         public List<Node> neighbors = new List<Node>();
-        protected List<float> distance2Neighbor = new List<float>();
+        public List<float> distance2Neighbor = new List<float>();
         public int index;
         public override string ToString()
         {
@@ -83,16 +83,55 @@ namespace Paper_Model
                     distance[i]);
             return nodeArray;
         }
+        public static Node[] createNodeGrid(int width, int height, float distance)
+        {
+            int size = width * height;
+            List<int> start = new List<int>();
+            List<int> end = new List<int>();
+            List<float> lengths = new List<float>();
+            //adding edges between all top left nodes
+            for (int x = 0; x < width - 1; x++)
+                for (int y = 0; y < height - 1; y++)
+                {
+                    int thisNode = y * width + x;
+                    start.Add(thisNode);
+                    end.Add(thisNode + 1);
+                    lengths.Add(distance);
+
+                    start.Add(thisNode);
+                    end.Add(thisNode + width);
+                    lengths.Add(distance);
+                }
+            //adding eddges to bottom row
+            for (int x = 0; x < width - 1; x++)
+            {
+                int thisNode = width * (height - 1) + x;
+                start.Add(thisNode);
+                end.Add(thisNode + 1);
+                lengths.Add(distance);
+            }
+            //adding edges to right column
+            for (int y = 0; y < height - 1; y++)
+            {
+                int thisNode = y * height + (width - 1);
+                start.Add(thisNode);
+                end.Add(thisNode + width);
+                lengths.Add(distance);
+            }
+
+            return Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
+        }
         public Node getPrevious(int start, float[,] distances)
         {
             float distance = distances[start, index];
-            for (int i = 0; true; i++)
+            for (int i = 0; i<neighbors.Count; i++)
             {
                 int neighbor = neighbors[i].index;
                 float neighbor2This = distances[start, neighbor] + distance2Neighbor[i];
                 if (neighbor2This == distance)
                     return neighbors[i];
             }
+            return default;
         }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Paper_Model
 {
@@ -10,8 +8,10 @@ namespace Paper_Model
     {
         private int size;
         private WorldNode[] nodes;
-        private WorldNode[] bikeParkingNode;
-        private WorldNode[] carParkNode;
+        private List<WorldNode> bikeParkingNodes = new List<WorldNode>();
+        private float bikeParkingCost;
+        private List<WorldNode> carParkNodes = new List<WorldNode>();
+        private float carParkingCost;
         //The weight a node has in regards to getting people to move to that node
         private int[] pull;
         //The chance a person has to move away from that node.
@@ -21,19 +21,37 @@ namespace Paper_Model
         private Graph walking;
         private Graph cycling;
         private Graph driving;
-        //TODO the generation of a world isnt 
-        public World(Graph distances)
+
+        public World(WorldNode[] nodes)
         {
-            //TODO: add worldnodes
+            this.nodes = nodes;
+            Graph distances = new Graph(nodes);
+            distances.Initialize();
             //TODO: add factors
             walking = distances.ScaleGraph(1);
             cycling = distances.ScaleGraph(0.2f);
             driving = distances.ScaleGraph(0.1f);
+            bikeParkingCost = 1;
+            carParkingCost = 2;
+            size = nodes.Length;
+            pull = new int[size];
+            push = new double[size];
+            for(int i = 0; i < size; i++)
+            {
+                WorldNode node = nodes[i];
+                if (node.bikePark)
+                    bikeParkingNodes.Add(node);
+                if (node.carPark)
+                    carParkNodes.Add(node);
+            }
+
         }
         //havent really tested yet
         public List<Log> Tick()
         {
             updatePushPull();
+            //TODO: the idea is that people move based on the returned logs, but i am tired. Goodnight
+            //Also not fully tested
             return movePeople();
         }
         private void updatePushPull()
@@ -48,11 +66,19 @@ namespace Paper_Model
         {
             public List<Node> path;
             public float effort;
+            public Car car;
+            public Bike bike;
 
-            public Log(List<Node> path, float effort)
+            public Log(List<Node> path, float effort, Car car, Bike bike)
             {
                 this.path = path;
                 this.effort = effort;
+                this.car = car;
+                this.bike = bike;
+            }
+            public override string ToString()
+            {
+                return Node.PrintList(path);
             }
         }
         private List<Log> movePeople()
@@ -76,17 +102,9 @@ namespace Paper_Model
                     }
             }
 
-
             return logs;
         }
-        /// <summary>
-        /// TODO: create graph 
-        /// </summary>
-        /// <param name="origin"></param>
-        /// <param name="destination"></param>
-        /// <param name="person"></param>
-        /// <returns></returns>
-        private Log movePerson(int origin, int destination, Person person)
+        private Graph createEffortGraph(int origin, int destination, Person person)
         {
             List<int> bikePoints = person.getBikes();
             List<int> carPoints = person.getCars();
@@ -98,19 +116,19 @@ namespace Paper_Model
             start.Add(origin);
             end.Add(destination);
             lengths.Add(walking.d(origin, destination));
-            for(int i = 0; i<carPoints.Count;i++)
+            for (int i = 0; i < carPoints.Count; i++)
             {
                 //walking to a car
                 start.Add(origin);
                 end.Add(carPoints[i]);
                 lengths.Add(walking.d(origin, carPoints[i]));
                 //driving to carpark
-                for(int j = 0; j < bikeParkingNode.Length; j++)
+                for (int j = 0; j < bikeParkingNodes.Count; j++)
                 {
-                    int endIndex = bikeParkingNode[j].index;
+                    int endIndex = bikeParkingNodes[j].index;
                     start.Add(carPoints[i]);
                     end.Add(endIndex);
-                    lengths.Add(driving.d(carPoints[i], endIndex));
+                    lengths.Add(driving.d(carPoints[i], endIndex)+2*carParkingCost);
                 }
             }
             for (int i = 0; i < bikePoints.Count; i++)
@@ -124,46 +142,58 @@ namespace Paper_Model
                 {
                     start.Add(bikePoints[i]);
                     end.Add(j);
-                    lengths.Add(driving.d(bikePoints[i], j));
+                    lengths.Add(cycling.d(bikePoints[i], j)+2*bikeParkingCost);
                 }
             }
 
-            for(int i =0; i < bikeParkingNode.Length;i++)
+            for (int i = 0; i < bikeParkingNodes.Count; i++)
             {
-                int bikeParkIndex = bikeParkingNode[i].index;
+                int bikeParkIndex = bikeParkingNodes[i].index;
                 //walking from bikepark to destination
                 start.Add(bikeParkIndex);
                 end.Add(destination);
                 lengths.Add(walking.d(bikeParkIndex, destination));
                 //walking from bikepark to carpark
-                for(int j = 0; j<carParkNode.Length; j++)
+                for (int j = 0; j < carParkNodes.Count; j++)
                 {
-                    int carParkIndex = carParkNode[i].index;
+                    int carParkIndex = carParkNodes[i].index;
                     start.Add(bikeParkIndex);
                     end.Add(carParkIndex);
                     lengths.Add(walking.d(bikeParkIndex, destination));
                 }
             }
 
-            for (int i = 0; i < carParkNode.Length; i++)
+            for (int i = 0; i < carParkNodes.Count; i++)
             {
                 //walking from carpark to destination
-                int carParkIndex = bikeParkingNode[i].index;
+                int carParkIndex = bikeParkingNodes[i].index;
                 start.Add(carParkIndex);
                 end.Add(destination);
                 lengths.Add(walking.d(carParkIndex, destination));
             }
-
             Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
-            Graph effortGraph = new Graph(nodeArray);
+            return new Graph(nodeArray);
+        }
+        private Log movePerson(int origin, int destination, Person person)
+        {
+            Graph effortGraph = createEffortGraph(origin, destination, person);
             effortGraph.LazyMinSpanTree(origin, destination);
 
             float effort = effortGraph.d(origin, destination);
             List<Node> path = effortGraph.GetPath(origin, destination);
-            Log log = new Log(path, effort);
+            Car car=new Car(-1);
+            Bike bike=new Bike(-1);
+            for(int i = 0; i<path.Count-2 ; i++)
+            {
+                WorldNode start = nodes[path[i].index];
+                WorldNode end = nodes[path[i + 1].index];
+                if (end.carPark && person.getCars().Contains(start.index))
+                    car=start.useCar(person);
+                else if (end.bikePark && person.getBikes().Contains(start.index))
+                    bike=start.useBike(person);
+            }
+            Log log = new Log(path, effort, car, bike);
 
-            nodes[origin].people.Remove(person);
-            nodes[destination].people.Add(person);
             return log;
         }
         /// <summary>
@@ -181,7 +211,7 @@ namespace Paper_Model
             {
                 if (bound < list[i])
                 {
-                    index = i - 1;
+                    index = i;
                     found = true;
                 }
                 else

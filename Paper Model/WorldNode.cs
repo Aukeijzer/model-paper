@@ -13,8 +13,13 @@ namespace Paper_Model
             people = new List<Person>();
             bikes = new List<Bike>();
             cars = new List<Car>();
-            bikePark = false;
-            carPark = false;
+            bikePark = true;
+            carPark = true;
+        }
+        public WorldNode(Node node) : this(node.index)
+        {
+            neighbors = node.neighbors;
+            distance2Neighbor = node.distance2Neighbor;
         }
         public List<Person> people;
         public bool bikePark;
@@ -28,22 +33,47 @@ namespace Paper_Model
             for (int i = 0; i < carAmount; i++)
             {
                 cars.Add(new Car(index));
+                for (int j = 0; j < peopleAmount; j++)
+                    people[j].addCar(cars[i]);
             }
             for (int i = 0; i < bikesAmount; i++)
             {
                 bikes.Add(new Bike(index));
+                for (int j = 0; j < peopleAmount; j++)
+                    people[j].addBike(bikes[i]);
             }
+        }
+        public Car useCar(Person person)
+        {
+            for (int i = 0; i < cars.Count; i++)
+                if (cars[i].owners.Contains(person))
+                {
+                    cars[i].moving = true;
+                    return cars[i];
+                }
+            return default;
+        }
+        public Bike useBike(Person person)
+        {
+            for (int i = 0; i < bikes.Count; i++)
+                if (bikes[i].owners.Contains(person))
+                {
+                    bikes[i].moving = true;
+                    return bikes[i];
+                }
+            return default;
         }
     }
     public class Person
     {
         public int location;
+        public bool moving;
         public Person(int location)
         {
             this.location = location;
         }
-        List<Car> cars;
-        List<Bike> bikes;
+        List<Car> cars = new List<Car>();
+        List<Bike> bikes = new List<Bike>();
         public void addCar(Car car)
         {
             cars.Add(car);
@@ -56,23 +86,28 @@ namespace Paper_Model
         }
         public List<int> getCars()
         {
+            //TODO: Carpooling
             List<int> carLocations = new List<int>();
             for (int i = 0; i < cars.Count; i++)
-                carLocations.Add(cars[i].location);
+                if(!cars[i].moving)
+                    carLocations.Add(cars[i].location);
+
             return carLocations;
         }
         public List<int> getBikes()
         {
             List<int> bikeLocations = new List<int>();
             for (int i = 0; i < bikes.Count; i++)
-                bikeLocations.Add(bikes[i].location);
+                if(!bikes[i].moving)
+                    bikeLocations.Add(bikes[i].location);
             return bikeLocations;
         }
     }
     public class Vehicle
     {
-        public List<Person> owners;
+        public List<Person> owners = new List<Person>();
         public int location;
+        public bool moving;
     }
     public class Bike : Vehicle
     {

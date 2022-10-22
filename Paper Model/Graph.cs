@@ -27,7 +27,7 @@ namespace Paper_Model
         }
         public Graph(int length, Node[] nodes, float[,] distances)
         {
-            this.Length = length;
+            Length = length;
             this.nodes = nodes;
             this.distances = distances;
         }
@@ -39,55 +39,6 @@ namespace Paper_Model
                     newDistances[x, y] = distances[x, y] * scale;
             return new Graph(Length, nodes, distances);
         }
-        /// <summary>
-        /// Creates a graph of a grid.
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="distance"></param>
-        public Graph(int width, int height, float distance)
-        {
-            Length = width * height;
-            distances = new float[Length, Length];
-            for (int x = 0; x < Length; x++)
-                for (int y = 0; y < Length; y++)
-                    distances[x, y] = float.MaxValue;
-            List<int> start = new List<int>();
-            List<int> end = new List<int>();
-            List<float> lengths = new List<float>();
-            //adding edges between all top left nodes
-            for (int x = 0; x < width - 1; x++)
-                for (int y = 0; y < height - 1; y++)
-                {
-                    int thisNode = y * width + x;
-                    start.Add(thisNode);
-                    end.Add(thisNode + 1);
-                    lengths.Add(distance);
-
-                    start.Add(thisNode);
-                    end.Add(thisNode + width);
-                    lengths.Add(distance);
-                }
-            //adding eddges to bottom row
-            for (int x = 0; x < width - 1; x++)
-            {
-                int thisNode = width * (height - 1) + x;
-                start.Add(thisNode);
-                end.Add(thisNode + 1);
-                lengths.Add(distance);
-            }
-            //adding edges to right column
-            for (int y = 0; y < height - 1; y++)
-            {
-                int thisNode = y * height + (width - 1);
-                start.Add(thisNode);
-                end.Add(thisNode + width);
-                lengths.Add(distance);
-            }
-            nodes = Node.createNodeArray(Length, start.ToArray(),end.ToArray(),lengths.ToArray());
-            Initialize();
-        }
-
         public void Initialize()
         {
             for (int i = 0; i < nodes.Length; i++)
@@ -156,11 +107,8 @@ namespace Paper_Model
                 //Can't reach any more nodes.
                 if (minNode.index == end)
                     finished = true;
-                else
-                {
-                    distance[minNode.index] = minD;
-                    minNode.updatedistances(heap, minD);
-                }
+                distance[minNode.index] = minD;
+                minNode.updatedistances(heap, minD);
 
             }
             for (int i = 0; i < Length; i++)
