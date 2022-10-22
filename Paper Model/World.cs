@@ -47,9 +47,9 @@ namespace Paper_Model
             }
 
         }
-        public float effortCost(int start, int end)
+        public float effortCost<T>(int start, int end) where T : Vehicle
         {
-            return effortCost(start, end, new Legs());
+            return effortCost(start, end, new T());
         }
         public float effortCost(int start,int end,Vehicle vehicle)
         {
@@ -135,7 +135,7 @@ namespace Paper_Model
             //walking from start to destination
             start.Add(origin);
             end.Add(destination);
-            lengths.Add(effortCost(origin, destination));
+            lengths.Add(effortCost<Legs>(origin, destination));
             for(int i = 0; i < vehicles.Count; i++)
                 if(!vehicles[i].moving)
             {
@@ -143,7 +143,7 @@ namespace Paper_Model
                 //walking to a vehicle
                 start.Add(origin);
                 end.Add(vehicle.location);
-                lengths.Add(effortCost(origin, vehicle.location));
+                lengths.Add(effortCost<Legs>(origin, vehicle.location));
                 //driving to carpark
                 if(vehicle is Car)
                     for (int j = 0; j < bikeParkingNodes.Count; j++)
@@ -170,14 +170,14 @@ namespace Paper_Model
                 //walking from bikepark to destination
                 start.Add(bikeParkIndex);
                 end.Add(destination);
-                lengths.Add(effortCost(bikeParkIndex, destination));
+                lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                 //walking from bikepark to carpark
                 for (int j = 0; j < carParkNodes.Count; j++)
                 {
                     int carParkIndex = carParkNodes[i].index;
                     start.Add(bikeParkIndex);
                     end.Add(carParkIndex);
-                    lengths.Add(effortCost(bikeParkIndex, destination));
+                    lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                 }
             }
 
@@ -187,17 +187,20 @@ namespace Paper_Model
                 int carParkIndex = bikeParkingNodes[i].index;
                 start.Add(carParkIndex);
                 end.Add(destination);
-                lengths.Add(effortCost(carParkIndex, destination));
+                lengths.Add(effortCost<Legs>(carParkIndex, destination));
             }
             Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
             return new Graph(nodeArray);
         }
-        private (float,Vehicle) determineTravelType(WorldNode start, WorldNode end, Person person)
+        private (float,Vehicle) determineTravelType(WorldNode start, WorldNode end, float effort, Person person)
         {
             int startI=start.index;
             int endI=end.index;
             Vehicle vehicle = new Legs();
-            float effort = effortCost(startI, end.index);
+            if(effort==effortCost(startI,endI,new Car()))
+            {
+
+            }
             if (end.carPark)
             {
                 List<Car> cars = person.getSpecificVehicle<Car>();
@@ -240,7 +243,7 @@ namespace Paper_Model
             {
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
-                (float effort, Vehicle vehicle) = determineTravelType(start, end, person);
+                Vehicle vehicle = determineTravelType(start, end, effortGraph.d(start.index,end.index), person);
                 vehicles.Add(vehicle);
             }
             Log log = new Log(path, totalEffort,vehicles,person);

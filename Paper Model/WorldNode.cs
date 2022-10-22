@@ -74,6 +74,10 @@ namespace Paper_Model
             location = index;
             moving = false;
         }
+        public Thing()
+        {
+
+        }
     }
     public class Person : Thing
     {
