@@ -12,17 +12,25 @@ namespace Paper_Model
 {
     public partial class Form1 : Form
     {
+        private int X;
+        private int Y;
+        private int distance;
         public Form1()
         {
             InitializeComponent();
-            Node[] nodes = Node.createNodeGrid(10, 10, 10);
+            textBox1.ScrollBars = ScrollBars.Vertical;
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Node[] nodes = Node.createNodeGrid(X, Y, distance);
             Graph graph2 = new Graph(nodes);
             WorldNode[] worldNodes = new WorldNode[nodes.Length];
             for (int i = 0; i < nodes.Length; i++)
                 worldNodes[i] = new WorldNode(nodes[i]);
-            worldNodes[0].addFamily(15, 15, 7);
+            worldNodes[0].addFamily(10, 1, 7);
             World world = new World(worldNodes);
-            textBox1.ScrollBars = ScrollBars.Vertical;
             for (int i = 0; i < 10; i++)
             {
                 var logs = world.Tick();
@@ -32,7 +40,21 @@ namespace Paper_Model
                 }
                 textBox1.AppendText("---" + Environment.NewLine);
             }
+        }
 
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            X = (int)numericUpDown1.Value;
+        }
+
+        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+        {
+            Y = (int)numericUpDown2.Value;
+        }
+
+        private void numericUpDown3_ValueChanged(object sender, EventArgs e)
+        {
+            distance = (int)numericUpDown3.Value;
         }
     }
 }

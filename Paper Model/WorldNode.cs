@@ -127,6 +127,9 @@ namespace Paper_Model
     }
     public class Legs : Vehicle
     {
-
+        public override string ToString()
+        {
+            return "Walking";
+        }
     }
 }
