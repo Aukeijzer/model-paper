@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Paper_Model
 {
-    class Node
+    public class Node
     {
         public List<Node> neighbors = new List<Node>();
         public List<float> distance2Neighbor = new List<float>();
@@ -55,6 +55,9 @@ namespace Paper_Model
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
+            int foo;
+            if (node.neighbors.Count > 300)
+                foo = 0;
         }
         /// <summary>
         /// outdated function
@@ -88,10 +91,11 @@ namespace Paper_Model
             for (int i = 0; i < size; i++)
                 nodeArray[i] = new Node(i);
             for (int i = 0; i < start.Length; i++)
-                Node.addNeighbors(
-                    nodeArray[start[i]],
-                    nodeArray[end[i]],
-                    distance[i]);
+                if(distance[i]>0)
+                    Node.addNeighbors(
+                        nodeArray[start[i]],
+                        nodeArray[end[i]],
+                        distance[i]);
             return nodeArray;
         }
         public static Node[] createNodeGrid(int width, int height, float distance)

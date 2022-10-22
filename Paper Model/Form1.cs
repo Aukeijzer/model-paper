@@ -20,7 +20,7 @@ namespace Paper_Model
             WorldNode[] worldNodes = new WorldNode[nodes.Length];
             for (int i = 0; i < nodes.Length; i++)
                 worldNodes[i] = new WorldNode(nodes[i]);
-            worldNodes[0].addFamily(15, 15, 7);
+            worldNodes[0].addFamily(15, 5, 7);
             World world = new World(worldNodes);
             textBox1.ScrollBars = ScrollBars.Vertical;
             for (int i = 0; i < 10; i++)
@@ -32,7 +32,6 @@ namespace Paper_Model
                 }
                 textBox1.AppendText("---" + Environment.NewLine);
             }
-
         }
     }
 }

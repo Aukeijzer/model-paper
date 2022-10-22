@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace Paper_Model
 {
-    class WorldNode : Node
+    public class WorldNode : Node
     {
         public WorldNode(int index) : base(index)
         {
             people = new List<Person>();
-            bikes = new List<Bike>();
-            cars = new List<Car>();
+            vehicles = new List<Vehicle>();
             bikePark = true;
             carPark = true;
         }
@@ -24,54 +23,53 @@ namespace Paper_Model
         }
         public List<Person> people;
         public bool bikePark;
-        public List<Bike> bikes;
         public bool carPark;
-        public List<Car> cars;
+        private List<Vehicle> vehicles;
         public void addFamily(int peopleAmount, int carAmount, int bikesAmount)
         {
             for (int i = 0; i < peopleAmount; i++)
                 people.Add(new Person(index));
             for (int i = 0; i < carAmount; i++)
             {
-                cars.Add(new Car(index));
+                vehicles.Add(new Car(index));
                 for (int j = 0; j < peopleAmount; j++)
-                    people[j].addVehicle(cars[i]);
+                    people[j].addVehicle(vehicles[i]);
             }
             for (int i = 0; i < bikesAmount; i++)
             {
-                bikes.Add(new Bike(index));
+                vehicles.Add(new Bike(index));
                 for (int j = 0; j < peopleAmount; j++)
-                    people[j].addVehicle(bikes[i]);
+                    people[j].addVehicle(vehicles[i]);
             }
         }
-        public Car useCar(Person person)
+        public void removeThing(Thing thing)
         {
-            for (int i = 0; i < cars.Count; i++)
-                if (cars[i].owners.Contains(person))
-                {
-                    cars[i].moving = true;
-                    return cars[i];
-                }
-            return default;
+            if (thing is Person person)
+                people.Remove(person);
+            if (thing is Vehicle vehicle)
+                vehicles.Remove(vehicle);
         }
-        public Bike useBike(Person person)
+        public void addThing(Thing thing)
         {
-            for (int i = 0; i < bikes.Count; i++)
-                if (bikes[i].owners.Contains(person))
-                {
-                    bikes[i].moving = true;
-                    return bikes[i];
-                }
-            return default;
+            if (thing is Person person)
+                people.Add(person);
+            if (thing is Vehicle vehicle)
+                vehicles.Add(vehicle);
         }
     }
     public abstract class Thing
     {
         public int location;
         public bool moving = false;
-        public void move(int index)
+        public void move(Node destination,WorldNode[] nodes)
         {
-            location = index;
+            move(destination.index, nodes);
+        }
+        public void move(int destination, WorldNode[] nodes)
+        {
+            nodes[location].removeThing(this);
+            location = destination;
+            nodes[location].addThing(this);
             moving = false;
         }
     }
@@ -127,6 +125,9 @@ namespace Paper_Model
     }
     public class Legs : Vehicle
     {
-
+        public override string ToString()
+        {
+            return "Walking";
+        }
     }
 }

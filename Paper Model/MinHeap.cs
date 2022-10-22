@@ -8,7 +8,7 @@ namespace Paper_Model
     /// <summary>
     /// Used to efficiently get the lowest element in a list
     /// </summary>
-    class MinHeap
+    public class MinHeap
     {
         private List<float> distances;
         private List<Node> nodes;

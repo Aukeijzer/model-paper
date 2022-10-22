@@ -32,8 +32,8 @@ namespace Paper_Model
             walking = distances.ScaleGraph(1);
             cycling = distances.ScaleGraph(0.2f);
             driving = distances.ScaleGraph(0.1f);
-            bikeParkingCost = 10;
-            carParkingCost = 15;
+            bikeParkingCost = 5;
+            carParkingCost = 7.5f;
             size = nodes.Length;
             pull = new int[size];
             push = new double[size];
@@ -47,11 +47,20 @@ namespace Paper_Model
             }
 
         }
-        public float effortCost<T>(int start, int end) where T : Vehicle, new()
+        //still buggy
+        public List<Log> Tick()
+        {
+            updatePushPull();
+            List<Log> logs = movePeople();
+            for (int i = 0; i < logs.Count; i++)
+                executeLog(logs[i]);
+            return logs;
+        }
+        private float effortCost<T>(int start, int end) where T : Vehicle, new()
         {
             return effortCost(start, end, new T());
         }
-        public float effortCost(int start,int end,Vehicle vehicle)
+        private float effortCost(int start, int end, Vehicle vehicle)
         {
             if (vehicle is Car)
                 return driving.d(start, end) + 2 * carParkingCost;
@@ -60,17 +69,17 @@ namespace Paper_Model
             else
                 return walking.d(start, end);
         }
-        //havent really tested yet
-        public List<Log> Tick()
+        private void executeLog(Log log)
         {
-            updatePushPull();
-            List<Log> logs = movePeople();
-            executeLogs(logs);
-            return logs;
-        }
-        private void executeLogs(List<Log> logs)
-        {
-            //for (int i = 0; i<) ;
+            List<Node> path = log.path;
+            log.person.move(path[path.Count-1], nodes);
+            List<Vehicle> vehicles = log.vehicles;
+            for (int i = 0; i < vehicles.Count; i++)
+                if (!(vehicles[i] is Legs))
+                    vehicles[i].move(path[i + 1], nodes);
+            int x;
+            if (log.path.Count > 2)
+                x = 6;
         }
         private void updatePushPull()
         {
@@ -84,13 +93,14 @@ namespace Paper_Model
         {
             public Person person;
             public List<Node> path;
-            public float effort;
+            public float totalEffort;
             public List<Vehicle> vehicles;
+            public List<float> efforts;
 
-            public Log(List<Node> path, float effort, List<Vehicle> vehicles, Person person)
+            public Log(List<Node> path, float totalEffort, List<Vehicle> vehicles, Person person)
             {
                 this.path = path;
-                this.effort = effort;
+                this.totalEffort = totalEffort;
                 this.vehicles = vehicles;
                 this.person = person;
             }
@@ -98,7 +108,7 @@ namespace Paper_Model
             {
                 string printable = "";
                 printable += Node.PrintList(path, vehicles);
-                //printable += "\n" + "Effort:" + effort;
+                printable += "\n" + "Effort:" + totalEffort;
                 return printable;
             }
         }
@@ -197,19 +207,19 @@ namespace Paper_Model
             if (effort == effortCost<Car>(start, end))
             {
                 List<Car> cars = person.getSpecificVehicle<Car>();
-                for (int j = 0; true; j++)
+                for (int j = 0; j<cars.Count; j++)
                     if (!cars[j].moving && cars[j].location == start)
                         return cars[j];
             }
             else if (effort == effortCost<Bike>(start, end))
             {
                 List<Bike> bikes = person.getSpecificVehicle<Bike>();
-                for (int j = 0; true; j++)
+                for (int j = 0; j<bikes.Count; j++)
                     if (!bikes[j].moving && bikes[j].location == start)
                         return bikes[j];
             }
-            else
-                return new Legs();
+            
+            return new Legs();
         }
         private Log movePerson(int origin, int destination, Person person)
         {
@@ -224,9 +234,11 @@ namespace Paper_Model
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
                 Vehicle vehicle = determineTravelType(start.index, end.index, effortGraph.d(start.index,end.index), person);
+                vehicle.moving = true;
                 vehicles.Add(vehicle);
             }
-            Log log = new Log(path, totalEffort,vehicles,person);
+            person.moving = true;
+            Log log = new Log(path, totalEffort,vehicles,person, efforts);
 
             return log;
         }
