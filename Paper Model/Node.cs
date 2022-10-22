@@ -17,9 +17,10 @@ namespace Paper_Model
         }
         public static string PrintList(List<Node> nodes)
         {
-            string s = "";
-            for (int i = 0; i < nodes.Count; i++)
-                s += nodes[i].ToString() + " ";
+            string s = "Start: "+nodes[0]+" ";
+            for (int i = 1; i < nodes.Count-1; i++)
+                s += "No. " + i + ": " + nodes[i].ToString() + " ";
+            s += "Last: " + nodes[nodes.Count-1];
             return s;
         }
         public Node(int index)

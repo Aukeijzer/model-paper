@@ -32,7 +32,7 @@ namespace Paper_Model
             cycling = distances.ScaleGraph(0.2f);
             driving = distances.ScaleGraph(0.1f);
             bikeParkingCost = 1;
-            carParkingCost = 2;
+            carParkingCost = 5;
             size = nodes.Length;
             pull = new int[size];
             push = new double[size];
@@ -58,7 +58,7 @@ namespace Paper_Model
         {
             for (int i = 0; i < nodes.Length; i++)
             {
-                pull[i] = random.Next(10);
+                pull[i] = random.Next(5);
                 push[i] = random.NextDouble();
             }
         }
@@ -78,7 +78,10 @@ namespace Paper_Model
             }
             public override string ToString()
             {
-                return Node.PrintList(path);
+                String printable = "";
+                printable += Node.PrintList(path);
+                //printable += "\n" + "Effort:" + effort;
+                return printable;
             }
         }
         private List<Log> movePeople()
