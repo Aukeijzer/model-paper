@@ -37,7 +37,7 @@ namespace Paper_Model
             for (int x = 0; x < Length; x++)
                 for (int y = 0; y < Length; y++)
                     newDistances[x, y] = distances[x, y] * scale;
-            return new Graph(Length, nodes, distances);
+            return new Graph(Length, nodes, newDistances);
         }
         public void Initialize()
         {

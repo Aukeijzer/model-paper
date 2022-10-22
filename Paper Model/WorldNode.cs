@@ -65,7 +65,7 @@ namespace Paper_Model
             return default;
         }
     }
-    public class Thing
+    public abstract class Thing
     {
         public int location;
         public bool moving = false;
@@ -74,10 +74,6 @@ namespace Paper_Model
             location = index;
             moving = false;
         }
-        public Thing()
-        {
-
-        }
     }
     public class Person : Thing
     {
@@ -85,6 +81,7 @@ namespace Paper_Model
         {
             this.location = location;
         }
+        public Person() { }
         public List<Vehicle> vehicles = new List<Vehicle>();
         public void addVehicle(Vehicle vehicle)
         {
@@ -100,7 +97,7 @@ namespace Paper_Model
             return vehicleType;
         }
     }
-    public class Vehicle : Thing
+    public abstract class Vehicle : Thing
     {
         public List<Person> owners = new List<Person>();
     }
@@ -110,7 +107,7 @@ namespace Paper_Model
         {
             this.location = location;
         }
-
+        public Bike() { }
         public override string ToString()
         {
             return "Bike";
@@ -122,6 +119,7 @@ namespace Paper_Model
         {
             this.location = location;
         }
+        public Car() { }
         public override string ToString()
         {
             return "Car";

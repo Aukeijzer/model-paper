@@ -32,8 +32,8 @@ namespace Paper_Model
             walking = distances.ScaleGraph(1);
             cycling = distances.ScaleGraph(0.2f);
             driving = distances.ScaleGraph(0.1f);
-            bikeParkingCost = 1;
-            carParkingCost = 5;
+            bikeParkingCost = 10;
+            carParkingCost = 15;
             size = nodes.Length;
             pull = new int[size];
             push = new double[size];
@@ -47,7 +47,7 @@ namespace Paper_Model
             }
 
         }
-        public float effortCost<T>(int start, int end) where T : Vehicle
+        public float effortCost<T>(int start, int end) where T : Vehicle, new()
         {
             return effortCost(start, end, new T());
         }
@@ -192,44 +192,24 @@ namespace Paper_Model
             Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
             return new Graph(nodeArray);
         }
-        private (float,Vehicle) determineTravelType(WorldNode start, WorldNode end, float effort, Person person)
+        private Vehicle determineTravelType(int start, int end, float effort, Person person)
         {
-            int startI=start.index;
-            int endI=end.index;
-            Vehicle vehicle = new Legs();
-            if(effort==effortCost(startI,endI,new Car()))
-            {
-
-            }
-            if (end.carPark)
+            if (effort == effortCost<Car>(start, end))
             {
                 List<Car> cars = person.getSpecificVehicle<Car>();
-                for (int j = 0; j < cars.Count; j++)
-                    if (!cars[j].moving && cars[j].location == startI)
-                    {
-                        float newEffort = effortCost(startI, endI, cars[j]);
-                        if (newEffort < effort)
-                        {
-                            effort = newEffort;
-                            vehicle = cars[j];
-                        }
-                    }
+                for (int j = 0; true; j++)
+                    if (!cars[j].moving && cars[j].location == start)
+                        return cars[j];
             }
-            if (end.bikePark)
+            else if (effort == effortCost<Bike>(start, end))
             {
                 List<Bike> bikes = person.getSpecificVehicle<Bike>();
-                for (int j = 0; j < bikes.Count; j++)
-                    if (!bikes[j].moving && bikes[j].location == startI)
-                    {
-                        float newEffort = effortCost(startI, endI, bikes[j]);
-                        if (newEffort < effort)
-                        {
-                            effort = newEffort;
-                            vehicle = bikes[j];
-                        }
-                    }
+                for (int j = 0; true; j++)
+                    if (!bikes[j].moving && bikes[j].location == start)
+                        return bikes[j];
             }
-            return (effort, vehicle);
+            else
+                return new Legs();
         }
         private Log movePerson(int origin, int destination, Person person)
         {
@@ -239,11 +219,11 @@ namespace Paper_Model
             float totalEffort = effortGraph.d(origin, destination);
             List<Node> path = effortGraph.GetPath(origin, destination);
             List<Vehicle> vehicles = new List<Vehicle>();
-            for(int i = 0; i<path.Count-2 ; i++)
+            for(int i = 0; i<path.Count-1 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
-                Vehicle vehicle = determineTravelType(start, end, effortGraph.d(start.index,end.index), person);
+                Vehicle vehicle = determineTravelType(start.index, end.index, effortGraph.d(start.index,end.index), person);
                 vehicles.Add(vehicle);
             }
             Log log = new Log(path, totalEffort,vehicles,person);
