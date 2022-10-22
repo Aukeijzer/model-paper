@@ -87,7 +87,7 @@ namespace Paper_Model
             return distance;
         }
         /// <summary>
-        /// Generates a Min
+        /// Lazy version of MinSpanTree
         /// </summary>
         /// <param name="nodes"></param>
         /// <param name="start"></param>

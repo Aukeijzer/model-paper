@@ -68,55 +68,37 @@ namespace Paper_Model
     public class Thing
     {
         public int location;
-        public bool moving;
+        public bool moving = false;
         public void move(int index)
         {
             location = index;
             moving = false;
         }
     }
-    public class Person
+    public class Person : Thing
     {
-        public int location;
-        public bool moving;
         public Person(int location)
         {
             this.location = location;
         }
-        List<Car> cars = new List<Car>();
-        List<Bike> bikes = new List<Bike>();
+        public List<Vehicle> vehicles = new List<Vehicle>();
         public void addVehicle(Vehicle vehicle)
         {
-            if  (vehicle is Car car)
-                cars.Add(car);
-            if (vehicle is Bike bike)
-                bikes.Add(bike);
+            vehicles.Add(vehicle);
             vehicle.owners.Add(this);
         }
-        public List<int> getCars()
+        public List<T> getSpecificVehicle<T>() where T : Vehicle
         {
-            //TODO: Carpooling
-            List<int> carLocations = new List<int>();
-            for (int i = 0; i < cars.Count; i++)
-                if(!cars[i].moving)
-                    carLocations.Add(cars[i].location);
-
-            return carLocations;
-        }
-        public List<int> getBikes()
-        {
-            List<int> bikeLocations = new List<int>();
-            for (int i = 0; i < bikes.Count; i++)
-                if(!bikes[i].moving)
-                    bikeLocations.Add(bikes[i].location);
-            return bikeLocations;
+            List<T> vehicleType = new List<T>();
+            for (int i = 0; i < vehicles.Count; i++)
+                if (vehicles[i] is T type)
+                    vehicleType.Add(type);
+            return vehicleType;
         }
     }
-    public class Vehicle
+    public class Vehicle : Thing
     {
         public List<Person> owners = new List<Person>();
-        public int location;
-        public bool moving = false;
     }
     public class Bike : Vehicle
     {
@@ -140,5 +122,9 @@ namespace Paper_Model
         {
             return "Car";
         }
+    }
+    public class Legs : Vehicle
+    {
+
     }
 }
