@@ -9,3 +9,14 @@ C:\Users\Sjaak\source\repos\Paper Model\Paper Model\obj\Debug\Paper Model.csproj
 C:\Users\Sjaak\source\repos\Paper Model\Paper Model\obj\Debug\Paper Model.csproj.CoreCompileInputs.cache
 C:\Users\Sjaak\source\repos\Paper Model\Paper Model\obj\Debug\Paper Model.exe
 C:\Users\Sjaak\source\repos\Paper Model\Paper Model\obj\Debug\Paper Model.pdb
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.exe.config
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.exe
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\bin\Debug\Paper Model.pdb
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.AssemblyReference.cache
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.SuggestedBindingRedirects.cache
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper_Model.Form1.resources
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper_Model.Properties.Resources.resources
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.GenerateResource.cache
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.csproj.CoreCompileInputs.cache
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.exe
+C:\Users\Sjaak\Documents\UU\OMI\GitHub\model-paper\Paper Model\obj\Debug\Paper Model.pdb

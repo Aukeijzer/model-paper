@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,13 +35,13 @@ namespace Paper_Model
             {
                 cars.Add(new Car(index));
                 for (int j = 0; j < peopleAmount; j++)
-                    people[j].addCar(cars[i]);
+                    people[j].addVehicle(cars[i]);
             }
             for (int i = 0; i < bikesAmount; i++)
             {
                 bikes.Add(new Bike(index));
                 for (int j = 0; j < peopleAmount; j++)
-                    people[j].addBike(bikes[i]);
+                    people[j].addVehicle(bikes[i]);
             }
         }
         public Car useCar(Person person)
@@ -64,6 +65,16 @@ namespace Paper_Model
             return default;
         }
     }
+    public class Thing
+    {
+        public int location;
+        public bool moving;
+        public void move(int index)
+        {
+            location = index;
+            moving = false;
+        }
+    }
     public class Person
     {
         public int location;
@@ -74,15 +85,13 @@ namespace Paper_Model
         }
         List<Car> cars = new List<Car>();
         List<Bike> bikes = new List<Bike>();
-        public void addCar(Car car)
+        public void addVehicle(Vehicle vehicle)
         {
-            cars.Add(car);
-            car.owners.Add(this);
-        }
-        public void addBike(Bike bike)
-        {
-            bikes.Add(bike);
-            bike.owners.Add(this);
+            if  (vehicle is Car car)
+                cars.Add(car);
+            if (vehicle is Bike bike)
+                bikes.Add(bike);
+            vehicle.owners.Add(this);
         }
         public List<int> getCars()
         {
@@ -107,7 +116,7 @@ namespace Paper_Model
     {
         public List<Person> owners = new List<Person>();
         public int location;
-        public bool moving;
+        public bool moving = false;
     }
     public class Bike : Vehicle
     {
@@ -115,12 +124,21 @@ namespace Paper_Model
         {
             this.location = location;
         }
+
+        public override string ToString()
+        {
+            return "Bike";
+        }
     }
     public class Car : Vehicle
     {
         public Car(int location)
         {
             this.location = location;
+        }
+        public override string ToString()
+        {
+            return "Car";
         }
     }
 }

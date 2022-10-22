@@ -18,6 +18,7 @@ namespace Paper_Model
         double[] push;
         Random random = new Random();
 
+        private Graph distances;
         private Graph walking;
         private Graph cycling;
         private Graph driving;
@@ -25,7 +26,7 @@ namespace Paper_Model
         public World(WorldNode[] nodes)
         {
             this.nodes = nodes;
-            Graph distances = new Graph(nodes);
+            distances = new Graph(nodes);
             distances.Initialize();
             //TODO: add factors
             walking = distances.ScaleGraph(1);
@@ -50,9 +51,13 @@ namespace Paper_Model
         public List<Log> Tick()
         {
             updatePushPull();
-            //TODO: the idea is that people move based on the returned logs, but i am tired. Goodnight
-            //Also not fully tested
-            return movePeople();
+            List<Log> logs = movePeople();
+            executeLogs(logs);
+            return logs;
+        }
+        private void executeLogs(List<Log> logs)
+        {
+            //for (int i = 0; i<) ;
         }
         private void updatePushPull()
         {
@@ -64,22 +69,22 @@ namespace Paper_Model
         }
         public struct Log
         {
+            public Person person;
             public List<Node> path;
             public float effort;
-            public Car car;
-            public Bike bike;
+            public List<Vehicle> vehicles;
 
-            public Log(List<Node> path, float effort, Car car, Bike bike)
+            public Log(List<Node> path, float effort, List<Vehicle> vehicles, Person person)
             {
                 this.path = path;
                 this.effort = effort;
-                this.car = car;
-                this.bike = bike;
+                this.vehicles = vehicles;
+                this.person = person;
             }
             public override string ToString()
             {
-                String printable = "";
-                printable += Node.PrintList(path);
+                string printable = "";
+                printable += Node.PrintList(path, vehicles);
                 //printable += "\n" + "Effort:" + effort;
                 return printable;
             }
@@ -184,18 +189,19 @@ namespace Paper_Model
 
             float effort = effortGraph.d(origin, destination);
             List<Node> path = effortGraph.GetPath(origin, destination);
-            Car car=new Car(-1);
-            Bike bike=new Bike(-1);
+            List<Vehicle> vehicles = new List<Vehicle>();
             for(int i = 0; i<path.Count-2 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
                 if (end.carPark && person.getCars().Contains(start.index))
-                    car=start.useCar(person);
+                    vehicles.Add(start.useCar(person));
                 else if (end.bikePark && person.getBikes().Contains(start.index))
-                    bike=start.useBike(person);
+                    vehicles.Add(start.useBike(person));
+                else
+                    vehicles.Add(null);
             }
-            Log log = new Log(path, effort, car, bike);
+            Log log = new Log(path, effort,vehicles,person);
 
             return log;
         }

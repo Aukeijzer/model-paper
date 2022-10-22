@@ -15,12 +15,22 @@ namespace Paper_Model
         {
             return index.ToString();
         }
-        public static string PrintList(List<Node> nodes)
+        public static string PrintList(List<Node> nodes, List<Vehicle> vehicles)
         {
-            string s = "Start: "+nodes[0]+" ";
-            for (int i = 1; i < nodes.Count-1; i++)
-                s += "No. " + i + ": " + nodes[i].ToString() + " ";
-            s += "Last: " + nodes[nodes.Count-1];
+            string s = "";
+            for (int i = 1; i < nodes.Count; i++)
+            {
+                s += "From: " + nodes[i-1] + " ";
+                s += "To: " + nodes[i] + " ";
+                if (vehicles.Count >= i)
+                {
+                    s += "Mode: " + vehicles[i-1] + "     ";
+                } //Je kunt het!
+                else
+                {
+                    s += "Mode: Walking" ;
+                }
+            }
             return s;
         }
         public Node(int index)
@@ -132,6 +142,7 @@ namespace Paper_Model
                 if (neighbor2This == distance)
                     return neighbors[i];
             }
+            //If this happens something went wrong.
             return default;
         }
     }
