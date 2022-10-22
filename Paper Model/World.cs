@@ -147,32 +147,32 @@ namespace Paper_Model
             end.Add(destination);
             lengths.Add(effortCost<Legs>(origin, destination));
             for(int i = 0; i < vehicles.Count; i++)
-                if(!vehicles[i].moving)
-            {
-                Vehicle vehicle = vehicles[i];
-                //walking to a vehicle
-                start.Add(origin);
-                end.Add(vehicle.location);
-                lengths.Add(effortCost<Legs>(origin, vehicle.location));
-                //driving to carpark
-                if(vehicle is Car)
-                    for (int j = 0; j < bikeParkingNodes.Count; j++)
-                    {
-                        int endIndex = bikeParkingNodes[j].index;
-                        start.Add(vehicle.location);
-                        end.Add(endIndex);
-                        lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
-                    }
-                //cycling to bikePark
-                if (vehicle is Bike)
-                    for (int j = 0; j < carParkNodes.Count; j++)
-                    {
-                        int endIndex = carParkNodes[j].index;
-                        start.Add(vehicle.location);
-                        end.Add(endIndex);
-                        lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
-                    }
-            }
+                if(!vehicles[i].moving) 
+                {
+                    Vehicle vehicle = vehicles[i];
+                    //walking to a vehicle
+                    start.Add(origin);
+                    end.Add(vehicle.location);
+                    lengths.Add(effortCost<Legs>(origin, vehicle.location));
+                    //driving to carpark
+                    if(vehicle is Car)
+                        for (int j = 0; j < bikeParkingNodes.Count; j++)
+                        {
+                            int endIndex = bikeParkingNodes[j].index;
+                            start.Add(vehicle.location);
+                            end.Add(endIndex);
+                            lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
+                        }
+                    //cycling to bikePark
+                    if (vehicle is Bike)
+                        for (int j = 0; j < carParkNodes.Count; j++)
+                        {
+                            int endIndex = carParkNodes[j].index;
+                            start.Add(vehicle.location);
+                            end.Add(endIndex);
+                            lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
+                        }
+                }
 
             for (int i = 0; i < bikeParkingNodes.Count; i++)
             {
