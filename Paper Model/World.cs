@@ -41,9 +41,9 @@ namespace Paper_Model
             distances = new Graph(nodes);
             distances.Initialize();
             //TODO: add factors
-            walking = distances.ScaleGraph(1);
-            cycling = distances.ScaleGraph(0.2f);
-            driving = distances.ScaleGraph(0.03f);
+            walking = new Graph(distances,1);
+            cycling = new Graph(distances,0.2f);
+            driving = new Graph(distances,0.03f);
             bikeParkingCost = 1;
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
@@ -78,6 +78,13 @@ namespace Paper_Model
         {
             return effortCost(start, end, new T());
         }
+        /// <summary>
+        /// Looks at the effort cost for going from A to B using a Vehicle
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="vehicle"></param>
+        /// <returns></returns>
         private float effortCost(int start, int end, Vehicle vehicle)
         {
             if (vehicle is Car)
@@ -90,6 +97,8 @@ namespace Paper_Model
                     return cycling.d(start, end) + 2 * bikeParkingCost;
                 else
                     return 1000000; //MAGIC NUMBERS
+                // NOTE: effortCost only works retroactively and doesnt influence the path taken in any way
+                // Furthermore it might be better to log the amount of "failed" travel plans instead of slapping an effort penalty on it.
             }
             else
             {
@@ -297,7 +306,6 @@ namespace Paper_Model
                 end.Add(destination);
                 lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                 //walking from bikepark to carpark
-                /*
                 for (int j = 0; j < carParkNodes.Count; j++)
                     {
                         int carParkIndex = carParkNodes[j].index;
@@ -305,7 +313,6 @@ namespace Paper_Model
                         end.Add(carParkIndex);
                         lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                     }
-                */
             }
             for (int i = 0; i < carParkNodes.Count; i++)
             {
