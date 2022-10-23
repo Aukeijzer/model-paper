@@ -19,10 +19,11 @@ namespace Paper_Model
         private float maxWalkingDistance;
         private float maxCyclingDistance;
         public static int Time;
+        public static float totalCarEmissions;
         public static int carUsage;
         public static int bikeUsage;
         public static int legsUsage;
-        public static int totalCarKM;
+        public static float totalCarKM;
 
         //The weight a node has in regards to getting people to move to that node
         private int[] pull;
@@ -30,7 +31,7 @@ namespace Paper_Model
         double[] push;
         Random random = new Random();
 
-        private Graph distances;
+        private static Graph distances;
         private Graph walking;
         private Graph cycling;
         private Graph driving;
@@ -48,9 +49,10 @@ namespace Paper_Model
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
-            maxWalkingDistance = 3f;
-            maxCyclingDistance = 12f;
+            maxWalkingDistance = 30f;
+            maxCyclingDistance = 120f;
             Time = 0;
+            totalCarEmissions = 0f;
             size = nodes.Length;
             pull = new int[size];
             push = new double[size];
@@ -69,6 +71,7 @@ namespace Paper_Model
         {
             updatePushPull();
             Time++;
+            totalCarEmissions = totalCarKM * carEmissions;
             List<Log> logs = movePeople();
             for (int i = 0; i < logs.Count; i++)
                 executeLog(logs[i]);
@@ -119,7 +122,11 @@ namespace Paper_Model
                 if (!(vehicles[i] is Legs))
                 {
                     vehicles[i].move(path[i + 1], nodes);
-                    if (vehicles[i] is Car) carUsage++;
+                    if (vehicles[i] is Car)
+                    {
+                        carUsage++;
+                        totalCarKM = Log.totalKM(log);
+                    }
                     if (vehicles[i] is Bike) bikeUsage++;
                 }
                 else if (vehicles[i] is Legs) legsUsage++;
@@ -147,7 +154,7 @@ namespace Paper_Model
                     push[i] = random.NextDouble();
                 }
             }
-
+            // Industrial area
             for (int i = third; i < third * 2; i++)
             {
                 if (Time <= 5 && Time >= 21)
@@ -166,6 +173,7 @@ namespace Paper_Model
                     push[i] = random.NextDouble();
                 }
             }
+            // Recreational Area
             for (int i = third*2; i < nodes.Length; i++)
             {
                 if (Time <= 3 && Time >= 18)
@@ -207,6 +215,15 @@ namespace Paper_Model
                 printable += "\n" + "Effort:" + totalEffort;
                 printable += "\n" + "Time is " + World.Time;
                 return printable;
+            }
+
+            public static float totalKM(Log log)
+            {
+                float totalKM = 0;
+                for(int i = 0; i<log.vehicles.Count;i++)
+                    if (log.vehicles[i] is Car)
+                        totalKM += distances.d(log.path[i], log.path[i+1]);
+                return totalKM;
             }
         }
         private List<Log> movePeople()

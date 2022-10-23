@@ -19,14 +19,18 @@ namespace Paper_Model
         private List<int> legsUsage = new List<int>();
         private List<int> bikeUsage = new List<int>();
         private List<int> carUsage = new List<int>();
-        private Series series;
+        private Series series1;
+        private Series series2;
         public Form1()
         {
             InitializeComponent();
             textBox1.ScrollBars = ScrollBars.Vertical;
             chart1.Titles.Add("Vehicle usage");
-            series = chart1.Series.Add("Vehicle usage");
-            series.ChartType = SeriesChartType.Pie;
+            series1 = chart1.Series.Add("Vehicle usage");
+            series1.ChartType = SeriesChartType.Pie;
+            chart2.Titles.Add("Total CO2 emission in grams");
+            series2 = chart2.Series.FindByName("CO2 emission");
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -38,22 +42,29 @@ namespace Paper_Model
                 worldNodes[i] = new WorldNode(nodes[i]);
             for (int i = 0; i < nodes.Length / 3; i++)
             {
-                worldNodes[i].addFamily(4, 1, 3);
+                worldNodes[i].addFamily(10, 10, 0);
             }
             World world = new World(worldNodes);
             for (int i = 0; i < 24; i++)
             {
                 var logs = world.Tick();
-                for (int j = 0; j < logs.Count; j++)
+                bool auke = false;
+                if (auke)
                 {
-                    textBox1.AppendText(logs[j].ToString() + Environment.NewLine);
+                    for (int j = 0; j < logs.Count; j++)
+                    {
+                        textBox1.AppendText(logs[j].ToString() + Environment.NewLine);
+                    }
+                    textBox1.AppendText("---" + Environment.NewLine);
                 }
-                textBox1.AppendText("---" + Environment.NewLine);
+                textBox1.AppendText(i+" ");
                 legsUsage.Add(World.legsUsage);
                 bikeUsage.Add(World.bikeUsage);
                 carUsage.Add(World.carUsage);
-
+                series2.Points.AddXY(i, World.totalCarEmissions);
+                
             }
+            
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
@@ -73,12 +84,12 @@ namespace Paper_Model
 
         private void numericUpDown4_ValueChanged(object sender, EventArgs e)
         {
-            series.Points.Clear();
+            series1.Points.Clear();
             if (numericUpDown4.Value > 0)
             {
-                series.Points.AddXY("Walking", legsUsage[(int)numericUpDown4.Value-1]);
-                series.Points.AddXY("Cycling", bikeUsage[(int)numericUpDown4.Value-1]);
-                series.Points.AddXY("Driving", carUsage[(int)numericUpDown4.Value-1]);
+                series1.Points.AddXY("Walking", legsUsage[(int)numericUpDown4.Value-1]);
+                series1.Points.AddXY("Cycling", bikeUsage[(int)numericUpDown4.Value-1]);
+                series1.Points.AddXY("Driving", carUsage[(int)numericUpDown4.Value-1]);
             }
         }
     }
