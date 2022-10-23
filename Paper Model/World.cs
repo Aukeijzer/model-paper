@@ -29,9 +29,9 @@ namespace Paper_Model
             distances = new Graph(nodes);
             distances.Initialize();
             //TODO: add factors
-            walking = distances.ScaleGraph(1);
-            cycling = distances.ScaleGraph(0.2f);
-            driving = distances.ScaleGraph(0.1f);
+            walking = new Graph(distances,1);
+            cycling = new Graph(distances,0.2f);
+            driving = new Graph(distances,0.1f);
             bikeParkingCost = 5;
             carParkingCost = 7.5f;
             size = nodes.Length;
@@ -133,6 +133,36 @@ namespace Paper_Model
 
             return logs;
         }
+        private Graph CreateEffortGraph(int origin, int destination, Person person)
+        {
+            List<Vehicle> vehicles = person.vehicles;
+            List<int> start = new List<int>();
+            List<int> end = new List<int>();
+            List<float> lengths = new List<float>();
+            List<int> start2 = new List<int>();
+            List<int> end2 = new List<int>();
+            List<float> lengths2 = new List<float>();
+            for (int i = 0; i < vehicles.Count; i++)
+                if (!vehicles[i].moving)
+                {
+                    Vehicle vehicle = vehicles[i];
+                    if (vehicle is Bike)
+                    {
+                        start.Add(vehicle.location);
+                        end.Add(vehicle.location + size);
+                        lengths.Add(bikeParkingCost);
+                    }
+                    if (vehicle is Car)
+                    {
+                        start2.Add(vehicle.location);
+                        end2.Add(vehicle.location + 2 * size);
+                        lengths2.Add(carParkingCost);
+                    }
+                }
+            Graph walkBikeGraph = new Graph(walking, cycling, start.ToArray(), end.ToArray(), lengths.ToArray());
+            Graph effortGraph = new Graph(walkBikeGraph, driving, start2.ToArray(), end2.ToArray(), lengths2.ToArray());
+            return effortGraph;
+        }
         private Graph createEffortGraph(int origin, int destination, Person person)
         {
             List<Vehicle> vehicles = person.vehicles;
@@ -154,18 +184,18 @@ namespace Paper_Model
                     lengths.Add(effortCost<Legs>(origin, vehicle.location));
                     //driving to carpark
                     if(vehicle is Car)
-                        for (int j = 0; j < bikeParkingNodes.Count; j++)
+                        for (int j = 0; j < carParkNodes.Count; j++)
                         {
-                            int endIndex = bikeParkingNodes[j].index;
+                            int endIndex = carParkNodes[j].index;
                             start.Add(vehicle.location);
                             end.Add(endIndex);
                             lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
                         }
                     //cycling to bikePark
                     if (vehicle is Bike)
-                        for (int j = 0; j < carParkNodes.Count; j++)
+                        for (int j = 0; j < bikeParkingNodes.Count; j++)
                         {
-                            int endIndex = carParkNodes[j].index;
+                            int endIndex = bikeParkingNodes[j].index;
                             start.Add(vehicle.location);
                             end.Add(endIndex);
                             lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
@@ -180,6 +210,7 @@ namespace Paper_Model
                 end.Add(destination);
                 lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                 //walking from bikepark to carpark
+                /*
                 for (int j = 0; j < carParkNodes.Count; j++)
                     {
                         int carParkIndex = carParkNodes[j].index;
@@ -187,6 +218,7 @@ namespace Paper_Model
                         end.Add(carParkIndex);
                         lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                     }
+                */
             }
 
             for (int i = 0; i < carParkNodes.Count; i++)
@@ -197,7 +229,7 @@ namespace Paper_Model
                 end.Add(destination);
                 lengths.Add(effortCost<Legs>(carParkIndex, destination));
             }
-            Node[] nodeArray = Node.createNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
+            Node[] nodeArray = Node.createDirectedNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
             return new Graph(nodeArray);
         }
         private Vehicle determineTravelType(int start, int end, float effort, Person person)
@@ -226,7 +258,11 @@ namespace Paper_Model
             float totalEffort = effortGraph.d(origin, destination);
             (List<float> efforts,List<Node> path) = effortGraph.GetPath(origin, destination);
             List<Vehicle> vehicles = new List<Vehicle>();
-            for(int i = 0; i<path.Count-1 ; i++)
+            int x;
+            if (path.Count > 2)
+                x = 6;
+
+            for (int i = 0; i<path.Count-1 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
@@ -238,9 +274,6 @@ namespace Paper_Model
             person.moving = true;
 
             Log log = new Log(path, totalEffort,vehicles,person, efforts);
-            int x;
-            if (log.path.Count > 2)
-                x = 6;
             return log;
         }
         /// <summary>

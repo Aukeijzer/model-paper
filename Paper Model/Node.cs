@@ -9,6 +9,7 @@ namespace Paper_Model
     public class Node
     {
         public List<Node> neighbors = new List<Node>();
+        public List<Node> onewayNeighbor = new List<Node>();
         public List<float> distance2Neighbor = new List<float>();
         public int index;
         public override string ToString()
@@ -37,6 +38,17 @@ namespace Paper_Model
         {
             this.index = index;
         }
+        public Node(Node node, float scale)
+        {
+            index = node.index;
+            neighbors = new List<Node>(node.neighbors.Count);
+            distance2Neighbor = new List<float>();
+            for (int i = 0; i < node.distance2Neighbor.Count; i++)
+            {
+                distance2Neighbor.Add(node.distance2Neighbor[i] * scale);
+                neighbors.Add(node.neighbors[i]);
+            }
+        }
 
         public void updatedistances(MinHeap heap, float distance)
         {
@@ -64,7 +76,7 @@ namespace Paper_Model
                 nodeB.addNeighbor(nodeA, distance);
             }
         }
-        protected void addNeighbor(Node node, float distance)
+        public void addNeighbor(Node node, float distance)
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
@@ -79,6 +91,7 @@ namespace Paper_Model
         /// <returns></returns>
         public static Node[] createNodeArray(int size, int[] start, int[] end, float[] distance)
         {
+
             bool[,] edge = new bool[size, size];
             for (int i = 0; i < size; i++)
                 for (int j = 0; j < size; j++)
@@ -90,7 +103,7 @@ namespace Paper_Model
             {
                 if (distance[i] > 0 && start[i] != end[i])
                 {
-                    if (edge[start[i], end[i]] || edge[end[i], start[i]])
+                    if (edge[start[i], end[i]] || edge[end[i],start[i]])
                         Node.updateNeighbors(
                             nodeArray[start[i]],
                             nodeArray[end[i]],
@@ -105,6 +118,33 @@ namespace Paper_Model
                 }
 
             }
+
+            return nodeArray;
+        }
+        public static Node[] createDirectedNodeArray(int size, int[] start, int[] end, float[] distance)
+        {
+            bool[,] edge = new bool[size, size];
+            for (int i = 0; i < size; i++)
+                for (int j = 0; j < size; j++)
+                    edge[i, j] = false;
+            Node[] nodeArray = new Node[size];
+            for (int i = 0; i < size; i++)
+                nodeArray[i] = new Node(i);
+            for (int i = 0; i < start.Length; i++)
+                if (distance[i] > 0 && start[i] != end[i])
+                {
+                    if (!edge[start[i], end[i]])
+                        nodeArray[start[i]].addNeighbor(nodeArray[end[i]], distance[i]);
+                    else
+                    {
+                        Node node = nodeArray[start[i]];
+                        int neighborIndex = node.neighbors.IndexOf(nodeArray[end[i]]);
+                        node.distance2Neighbor[neighborIndex] = Math.Min(node.distance2Neighbor[neighborIndex], distance[i]);
+                    }
+                    edge[start[i], end[i]] = true;
+                }
+
+                
 
             return nodeArray;
         }
@@ -156,6 +196,15 @@ namespace Paper_Model
                 if (neighbor2This == distance)
                     return neighbors[i];
             }
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                int neighbor = neighbors[i].index;
+                int neighborNeighborIndex = neighbors[i].neighbors.IndexOf(this);
+                float neighbor2This = distances[start, neighbor] + neighbors[i].distance2Neighbor[neighborNeighborIndex];
+                if (neighbor2This == distance)
+                    return neighbors[i];
+            }
+
             //If this happens something went wrong.
             return default;
         }

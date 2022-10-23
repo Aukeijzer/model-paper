@@ -31,13 +31,42 @@ namespace Paper_Model
             this.nodes = nodes;
             this.distances = distances;
         }
-        public Graph ScaleGraph(float scale)
+        public Graph(Graph oldGraph, float scale)
         {
-            float[,] newDistances = new float[Length, Length];
+            Length = oldGraph.Length;
+            distances = new float[Length, Length];
             for (int x = 0; x < Length; x++)
                 for (int y = 0; y < Length; y++)
-                    newDistances[x, y] = distances[x, y] * scale;
-            return new Graph(Length, nodes, newDistances);
+                    distances[x, y] = oldGraph.distances[x, y] * scale;
+            nodes = new Node[Length];
+            for (int i = 0; i < nodes.Length; i++)
+                nodes[i] = new Node(oldGraph.nodes[i], scale);
+        }
+        public Graph(Graph graph1, Graph graph2, int[] start, int[] end, float[] lengths)
+        {
+            Length = graph1.Length + graph2.Length;
+            List<Node> list = new List<Node>();
+            list.AddRange(graph1.nodes);
+            list.AddRange(graph2.nodes);
+
+            nodes = list.ToArray();
+            for (int i = 0; i < Length; i++)
+                nodes[i].index = i;
+            distances = new float[Length, Length];
+            for (int x = 0; x < Length; x++)
+                for (int y = 0; y < Length; y++)
+                    distances[x, y] = float.MaxValue;
+
+            for (int x = 0; x < graph1.Length; x++)
+                for (int y = 0; y < graph1.Length; y++)
+                    distances[x, y] = graph1.d(x, y);
+            for (int x = 0; x < graph2.Length; x++)
+                for (int y = 0; y < graph2.Length; y++)
+                    distances[x + graph1.Length, y + graph1.Length] = graph2.d(x, y);
+            for (int i = 0; i < start.Length; i++)
+            {
+                Node.addNeighbors(nodes[start[i]], nodes[end[i]], lengths[i]);
+            }
         }
         public void Initialize()
         {
@@ -86,6 +115,7 @@ namespace Paper_Model
             }
             return distance;
         }
+        //TODO: still need to fuck the engeratrion of the effort graphs
         /// <summary>
         /// Lazy version of MinSpanTree
         /// </summary>
@@ -98,7 +128,7 @@ namespace Paper_Model
             //This code is shamelessly copy pasted and could possibly be improved.
             float[] distance = new float[nodes.Length];
             for (int i = 0; i < distance.Length; i++)
-                distance[i] = float.MaxValue;
+                distance[i] = distances[start,i];
             MinHeap heap = createMinHeap(nodes[start],nodes);
             bool finished = false;
             while (!finished)
@@ -124,7 +154,7 @@ namespace Paper_Model
             Node nextNode = path[path.Count - 1];
             while (distance > 0)
             {
-                path.Add(nextNode.getPrevious(start,distances));
+                path.Add(previousNode(start,nextNode));
                 nextNode = path[path.Count - 1];
                 distance = distances[start, nextNode.index];
                 distance2start.Add(distance);
@@ -141,7 +171,41 @@ namespace Paper_Model
             }
             return (distance2start,path);
         }
+        private Node previousNode(int start, Node node)
+        {
+            float distance = distances[start, node.index];
+            for(int i =0;i<Length;i++)
+            {
+                int neighborIndex = nodes[i].neighbors.IndexOf(node);
+                if (neighborIndex != -1)
+                {
+                    float neighbor2This = distances[start, i] + nodes[i].distance2Neighbor[neighborIndex];
+                    if (neighbor2This == distance)
+                        return nodes[i];
+                }
+            }
+            return default;
+            /*
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                int neighbor = neighbors[i].index;
+                float neighbor2This = distances[start, neighbor] + distance2Neighbor[i];
+                if (neighbor2This == distance)
+                    return neighbors[i];
+            }
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                int neighbor = neighbors[i].index;
+                int neighborNeighborIndex = neighbors[i].neighbors.IndexOf(this);
+                float neighbor2This = distances[start, neighbor] + neighbors[i].distance2Neighbor[neighborNeighborIndex];
+                if (neighbor2This == distance)
+                    return neighbors[i];
+            }
 
+            //If this happens something went wrong.
+            return default;
+            */
+        }
         public (List<float>,List<Node>) GetPath(Node start, Node end)
         {
             return GetPath(start.index, end.index);
