@@ -42,6 +42,7 @@ namespace Paper_Model
                     people[j].addVehicle(vehicles[i]);
             }
         }
+
         public void removeThing(Thing thing)
         {
             if (thing is Person person)

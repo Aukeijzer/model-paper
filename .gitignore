@@ -398,7 +398,12 @@ FodyWeavers.xsd
 *.sln.iml
 Paper Model/bin/Debug/Paper Model.pdb
 Paper Model/obj/Debug/Paper Model.pdb
-*.exe
 Paper Model/obj/Debug/Paper Model.exe
 Paper Model/obj/Debug/Paper Model.pdb
 Paper Model/bin/Debug/Paper Model.pdb
+Paper Model/bin/Debug/Paper Model.exe
+Paper Model/bin/Debug/Paper Model.exe
+Paper Model/bin/Debug/Paper Model.pdb
+Paper Model/obj/Debug/Paper Model.exe
+Paper Model/obj/Debug/Paper Model.pdb
+Paper Model/obj/Debug/Paper Model.csproj.AssemblyReference.cache

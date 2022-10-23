@@ -151,6 +151,8 @@ namespace Paper_Model
         public static Node[] createNodeGrid(int width, int height, float distance)
         {
             int size = width * height;
+            Random random = new Random();
+            
             List<int> start = new List<int>();
             List<int> end = new List<int>();
             List<float> lengths = new List<float>();
@@ -161,13 +163,14 @@ namespace Paper_Model
                     int thisNode = y * width + x;
                     start.Add(thisNode);
                     end.Add(thisNode + 1);
+                    //lengths.Add((float)random.NextDouble()*distance+1);
                     lengths.Add(distance);
-
                     start.Add(thisNode);
                     end.Add(thisNode + width);
+                    //lengths.Add((float)random.NextDouble()*distance+1);
                     lengths.Add(distance);
                 }
-            //adding eddges to bottom row
+            //adding edges to bottom row
             for (int x = 0; x < width - 1; x++)
             {
                 int thisNode = width * (height - 1) + x;
