@@ -95,21 +95,14 @@ namespace Paper_Model
 
             //Node is last node in tree
             if (size < leftNode) return;
-
-            if (distances[index] > distances[leftNode])
+            int minNode;
+            if (size < rightNode || distances[rightNode]> distances[leftNode]) minNode = leftNode;
+            else minNode = rightNode;
+            
+            if (distances[index] > distances[minNode])
             {
-                swap(leftNode, index);
-                heapifyDown(leftNode);
-                return;
-            }
-
-            if (size < rightNode) return;
-
-            if (distances[index] > distances[rightNode])
-            {
-                swap(rightNode, index);
-                heapifyDown(rightNode);
-                return;
+                swap(minNode, index);
+                heapifyDown(minNode);
             }
         }
         private void heapifyUp(int index)

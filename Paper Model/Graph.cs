@@ -114,26 +114,35 @@ namespace Paper_Model
             for (int i = 0; i < Length; i++)
                 distances[start, i] = distance[i];
         }
-        public List<Node> GetPath(int start, int end)
+        public (List<float>,List<Node>) GetPath(int start, int end)
         {
             List<Node> path = new List<Node>();
+            List<float> distance2start = new List<float>();
             path.Add(nodes[end]);
             float distance = distances[start, end];
+            distance2start.Add(distance);
             Node nextNode = path[path.Count - 1];
             while (distance > 0)
             {
                 path.Add(nextNode.getPrevious(start,distances));
                 nextNode = path[path.Count - 1];
                 distance = distances[start, nextNode.index];
+                distance2start.Add(distance);
             }
             if (path.Count == 0)
+            {
                 path.Add(nodes[start]);
+                distance2start.Add(0);
+            }
             else
+            {
                 path.Reverse();
-            return path;
+                distance2start.Reverse();
+            }
+            return (distance2start,path);
         }
 
-        public List<Node> GetPath(Node start, Node end)
+        public (List<float>,List<Node>) GetPath(Node start, Node end)
         {
             return GetPath(start.index, end.index);
         }

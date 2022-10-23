@@ -12,9 +12,9 @@ namespace Paper_Model
 {
     public partial class Form1 : Form
     {
-        private int X;
-        private int Y;
-        private int distance;
+        private int X = 10;
+        private int Y = 10;
+        private int distance = 10;
         public Form1()
         {
             InitializeComponent();

@@ -77,9 +77,6 @@ namespace Paper_Model
             for (int i = 0; i < vehicles.Count; i++)
                 if (!(vehicles[i] is Legs))
                     vehicles[i].move(path[i + 1], nodes);
-            int x;
-            if (log.path.Count > 2)
-                x = 6;
         }
         private void updatePushPull()
         {
@@ -97,12 +94,13 @@ namespace Paper_Model
             public List<Vehicle> vehicles;
             public List<float> efforts;
 
-            public Log(List<Node> path, float totalEffort, List<Vehicle> vehicles, Person person)
+            public Log(List<Node> path, float totalEffort, List<Vehicle> vehicles, Person person, List<float> efforts)
             {
                 this.path = path;
                 this.totalEffort = totalEffort;
                 this.vehicles = vehicles;
                 this.person = person;
+                this.efforts = efforts;
             }
             public override string ToString()
             {
@@ -183,18 +181,18 @@ namespace Paper_Model
                 lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
                 //walking from bikepark to carpark
                 for (int j = 0; j < carParkNodes.Count; j++)
-                {
-                    int carParkIndex = carParkNodes[i].index;
-                    start.Add(bikeParkIndex);
-                    end.Add(carParkIndex);
-                    lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
-                }
+                    {
+                        int carParkIndex = carParkNodes[j].index;
+                        start.Add(bikeParkIndex);
+                        end.Add(carParkIndex);
+                        lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
+                    }
             }
 
             for (int i = 0; i < carParkNodes.Count; i++)
             {
                 //walking from carpark to destination
-                int carParkIndex = bikeParkingNodes[i].index;
+                int carParkIndex = carParkNodes[i].index;
                 start.Add(carParkIndex);
                 end.Add(destination);
                 lengths.Add(effortCost<Legs>(carParkIndex, destination));
@@ -225,21 +223,24 @@ namespace Paper_Model
         {
             Graph effortGraph = createEffortGraph(origin, destination, person);
             effortGraph.LazyMinSpanTree(origin, destination);
-
             float totalEffort = effortGraph.d(origin, destination);
-            List<Node> path = effortGraph.GetPath(origin, destination);
+            (List<float> efforts,List<Node> path) = effortGraph.GetPath(origin, destination);
             List<Vehicle> vehicles = new List<Vehicle>();
             for(int i = 0; i<path.Count-1 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
                 WorldNode end = nodes[path[i + 1].index];
-                Vehicle vehicle = determineTravelType(start.index, end.index, effortGraph.d(start.index,end.index), person);
+                float effort = efforts[i+1] - efforts[i];
+                Vehicle vehicle = determineTravelType(start.index, end.index, effort, person);
                 vehicle.moving = true;
                 vehicles.Add(vehicle);
             }
             person.moving = true;
-            Log log = new Log(path, totalEffort,vehicles,person, efforts);
 
+            Log log = new Log(path, totalEffort,vehicles,person, efforts);
+            int x;
+            if (log.path.Count > 2)
+                x = 6;
             return log;
         }
         /// <summary>

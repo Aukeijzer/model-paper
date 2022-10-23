@@ -20,15 +20,15 @@ namespace Paper_Model
             string s = "";
             for (int i = 1; i < nodes.Count; i++)
             {
-                s += "From: " + nodes[i-1] + " ";
+                s += "From: " + nodes[i - 1] + " ";
                 s += "To: " + nodes[i] + " ";
                 if (vehicles.Count >= i)
                 {
-                    s += "Mode: " + vehicles[i-1] + "     ";
+                    s += "Mode: " + vehicles[i - 1] + "     ";
                 } //Je kunt het!
                 else
                 {
-                    s += "Mode: Walking" ;
+                    s += "Mode: Walking";
                 }
             }
             return s;
@@ -46,36 +46,28 @@ namespace Paper_Model
                 heap.Update(newDistance, neighbors[i]);
             }
         }
+        public static void updateNeighbors(Node nodeA, Node nodeB, float distance)
+        {
+            int indexA = nodeA.neighbors.IndexOf(nodeB);
+            if (distance < nodeA.distance2Neighbor[indexA])
+            {
+                nodeA.distance2Neighbor[indexA] = distance;
+                int indexB = nodeB.neighbors.IndexOf(nodeA);
+                nodeB.distance2Neighbor[indexB] = distance;
+            }
+        }
         public static void addNeighbors(Node nodeA, Node nodeB, float distance)
         {
-            nodeA.addNeighbor(nodeB, distance);
-            nodeB.addNeighbor(nodeA, distance);
+            if (nodeA.index != nodeB.index && distance > 0)
+            {
+                nodeA.addNeighbor(nodeB, distance);
+                nodeB.addNeighbor(nodeA, distance);
+            }
         }
         protected void addNeighbor(Node node, float distance)
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
-            int foo;
-            if (node.neighbors.Count > 300)
-                foo = 0;
-        }
-        /// <summary>
-        /// outdated function
-        /// </summary>
-        /// <param name="size">the amount of nodes</param>
-        /// <param name="edges">the edges between the nodes</param>
-        /// <returns></returns>
-        public static Node[] createNodeArray(int size, int[] edges)
-        {
-            Node[] nodeArray = new Node[size];
-            for (int i = 0; i < nodeArray.Length; i++)
-                nodeArray[i] = new Node(i);
-            for (int i = 0; i < edges.Length; i += 3)
-                Node.addNeighbors(
-                    nodeArray[edges[i]],
-                    nodeArray[edges[i + 1]],
-                    edges[i + 2]);
-            return nodeArray;
         }
         /// <summary>
         /// creates and initializes an array of nodes.
@@ -87,15 +79,33 @@ namespace Paper_Model
         /// <returns></returns>
         public static Node[] createNodeArray(int size, int[] start, int[] end, float[] distance)
         {
+            bool[,] edge = new bool[size, size];
+            for (int i = 0; i < size; i++)
+                for (int j = 0; j < size; j++)
+                    edge[i, j] = false;
             Node[] nodeArray = new Node[size];
             for (int i = 0; i < size; i++)
                 nodeArray[i] = new Node(i);
             for (int i = 0; i < start.Length; i++)
-                if(distance[i]>0)
-                    Node.addNeighbors(
-                        nodeArray[start[i]],
-                        nodeArray[end[i]],
-                        distance[i]);
+            {
+                if (distance[i] > 0 && start[i] != end[i])
+                {
+                    if (edge[start[i], end[i]] || edge[end[i], start[i]])
+                        Node.updateNeighbors(
+                            nodeArray[start[i]],
+                            nodeArray[end[i]],
+                            distance[i]);
+
+                    else
+                        Node.addNeighbors(
+                            nodeArray[start[i]],
+                            nodeArray[end[i]],
+                            distance[i]);
+                    edge[start[i], end[i]] = true;
+                }
+
+            }
+
             return nodeArray;
         }
         public static Node[] createNodeGrid(int width, int height, float distance)
