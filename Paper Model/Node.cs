@@ -11,7 +11,7 @@ namespace Paper_Model
         public List<Node> neighbors = new List<Node>();
         public List<float> distance2Neighbor = new List<float>();
         public List<Node> reverseNeighbor = new List<Node>();
-        public List<int> reverseNeighborIndex = new List<int>();
+        public List<float> reverseNeighborDistance = new List<float>();
         public int index;
         public override string ToString()
         {
@@ -50,7 +50,7 @@ namespace Paper_Model
                 neighbors.Add(node.neighbors[i]);
             }
             reverseNeighbor = node.reverseNeighbor;
-            reverseNeighborIndex = node.reverseNeighborIndex;
+            reverseNeighborDistance = node.reverseNeighborDistance;
         }
 
         public void updatedistances(MinHeap heap, float distance)
@@ -61,15 +61,20 @@ namespace Paper_Model
                 heap.Update(newDistance, neighbors[i]);
             }
         }
+        public static void updateNeighbor(Node start, Node end, float distance)
+        {
+            int startIndex = start.neighbors.IndexOf(end);
+            if (distance < start.distance2Neighbor[startIndex])
+            {
+                start.distance2Neighbor[startIndex] = distance;
+                int endIndex = end.reverseNeighbor.IndexOf(start);
+                end.reverseNeighborDistance[endIndex] = distance;
+            }
+        }
         public static void updateNeighbors(Node nodeA, Node nodeB, float distance)
         {
-            int indexA = nodeA.neighbors.IndexOf(nodeB);
-            if (distance < nodeA.distance2Neighbor[indexA])
-            {
-                nodeA.distance2Neighbor[indexA] = distance;
-                int indexB = nodeB.neighbors.IndexOf(nodeA);
-                nodeB.distance2Neighbor[indexB] = distance;
-            }
+            updateNeighbor(nodeA, nodeB, distance);
+            updateNeighbor(nodeB, nodeA, distance);
         }
         public static void addNeighbors(Node nodeA, Node nodeB, float distance)
         {
@@ -83,8 +88,9 @@ namespace Paper_Model
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
-            node.reverseNeighborIndex.Add(neighbors.Count - 1);
             node.reverseNeighbor.Add(this);
+            node.reverseNeighborDistance.Add(distance);
+
         }
         /// <summary>
         /// creates and initializes an array of nodes.
@@ -143,8 +149,8 @@ namespace Paper_Model
                     else
                     {
                         Node node = nodeArray[start[i]];
-                        int neighborIndex = node.neighbors.IndexOf(nodeArray[end[i]]);
-                        node.distance2Neighbor[neighborIndex] = Math.Min(node.distance2Neighbor[neighborIndex], distance[i]);
+                        Node endNode = nodeArray[end[i]];
+                        updateNeighbor(node, endNode, distance[i]);
                     }
                     edge[start[i], end[i]] = true;
                 }

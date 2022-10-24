@@ -42,7 +42,7 @@ namespace Paper_Model
                 worldNodes[i] = new WorldNode(nodes[i]);
             for (int i = 0; i < nodes.Length / 3; i++)
             {
-                worldNodes[i].addFamily(1, 0, 0);
+                worldNodes[i].addFamily(5, 1, 5);
             }
             World world = new World(worldNodes);
             for (int i = 0; i < 24; i++)

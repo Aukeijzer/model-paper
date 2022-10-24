@@ -198,8 +198,7 @@ namespace Paper_Model
             {
                 Node neighbor = node.reverseNeighbor[i];
                 int neighborIndex = neighbor.index;
-                float neighbor2This = distances[start, neighborIndex] + 
-                    neighbor.distance2Neighbor[neighbor.reverseNeighborIndex[i]];
+                float neighbor2This = distances[start, neighborIndex] + node.reverseNeighborDistance[i];
                 if (neighbor2This == distance)
                     return neighbor;
             }

@@ -21,7 +21,7 @@ namespace Paper_Model
             neighbors = node.neighbors;
             distance2Neighbor = node.distance2Neighbor;
             reverseNeighbor = node.reverseNeighbor;
-            reverseNeighborIndex = node.reverseNeighborIndex;
+            reverseNeighborDistance = node.reverseNeighborDistance;
         }
         public List<Person> people;
         public bool bikePark;
