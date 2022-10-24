@@ -42,13 +42,13 @@ namespace Paper_Model
                 worldNodes[i] = new WorldNode(nodes[i]);
             for (int i = 0; i < nodes.Length / 3; i++)
             {
-                worldNodes[i].addFamily(10, 10, 0);
+                worldNodes[i].addFamily(5, 2, 4);
             }
             World world = new World(worldNodes);
             for (int i = 0; i < 24; i++)
             {
                 var logs = world.Tick();
-                bool auke = false;
+                bool auke = true;
                 if (auke)
                 {
                     for (int j = 0; j < logs.Count; j++)

@@ -49,8 +49,8 @@ namespace Paper_Model
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
-            maxWalkingDistance = 30f;
-            maxCyclingDistance = 120f;
+            maxWalkingDistance = 4f;
+            maxCyclingDistance = 12f;
             Time = 0;
             totalCarEmissions = 0f;
             size = nodes.Length;
@@ -71,6 +71,7 @@ namespace Paper_Model
         {
             updatePushPull();
             Time++;
+            if (Time > 24) Time = 1;
             totalCarEmissions = totalCarKM * carEmissions;
             List<Log> logs = movePeople();
             for (int i = 0; i < logs.Count; i++)
@@ -90,27 +91,53 @@ namespace Paper_Model
         /// <returns></returns>
         private float effortCost(int start, int end, Vehicle vehicle)
         {
+            // NOTE: effortCost only works retroactively and doesnt influence the path taken in any way
+            // Furthermore it might be better to log the amount of "failed" travel plans instead of slapping an effort penalty on it.
+            float walkingD = walking.d(start, end);
+            float cyclingD = cycling.d(start, end);
+            float drivingD = driving.d(start, end);
             if (vehicle is Car)
             {
-                return driving.d(start, end) + 2 * carParkingCost + walking.d(start,end)*carEmissions;
+                return drivingD + 2 * carParkingCost + walkingD*carEmissions;
             }
             else if (vehicle is Bike)
             {
-                if (walking.d(start, end) < maxCyclingDistance)
-                    return cycling.d(start, end) + 2 * bikeParkingCost;
+                if (walkingD < maxCyclingDistance) // walkingD is accurate km, thats why the comparison
+                    return cyclingD + 2 * bikeParkingCost;
                 else
-                    return 1000000; //MAGIC NUMBERS
-                // NOTE: effortCost only works retroactively and doesnt influence the path taken in any way
-                // Furthermore it might be better to log the amount of "failed" travel plans instead of slapping an effort penalty on it.
+                {
+                    float extraCyclingDistance = cyclingD - maxCyclingDistance;
+                    float extraCyclingCost = cyclingD;
+                    int i = 0;
+                    while (i < extraCyclingDistance)
+                    {
+                        extraCyclingCost *= 1.2f; //Magic numbers I guess
+                        i++;
+                    }
+                    return extraCyclingCost; 
+                }
+            }
+            else if (vehicle is Legs)
+            {
+                if (walkingD < maxWalkingDistance)
+                    return walkingD;
+                else
+                {
+                    float extraWalkingDistance = walkingD - maxWalkingDistance;
+                    float extraWalkingCost = walkingD;
+                    int i = 0;
+                    while (i < extraWalkingDistance)
+                    {
+                        extraWalkingCost *= 1.5f; //Magic numbers I guess
+                        i++;
+                    }
+                    return extraWalkingCost; 
+                }
             }
             else
             {
-                if (walking.d(start, end) < maxWalkingDistance)
-                    return walking.d(start, end);
-                else
-                    return 1000000; //MOAR MAGIC NUMBERS
+                return 0;
             }
-                
         }
         private void executeLog(Log log)
         {
@@ -125,71 +152,74 @@ namespace Paper_Model
                     if (vehicles[i] is Car)
                     {
                         carUsage++;
-                        totalCarKM = Log.totalKM(log);
+                        //totalCarKM = Log.totalKM(log);
                     }
                     if (vehicles[i] is Bike) bikeUsage++;
                 }
                 else if (vehicles[i] is Legs) legsUsage++;
             }
         }
-        private void updatePushPull()
+        private void updatePushPull()  //Whole function is magic numbers (except peak hours)
         {
             // Residential areas
             int third = nodes.Length / 3;
+            
             for (int i = 0; i < third; i++)
             {
-                if (Time <= 5 && Time >= 21)
+                
+                if (Time <= 5 && Time > 17)
                 {
                     pull[i] = random.Next(5,10);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.2;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 6 && Time <= 9)
+                {
+                    pull[i] = random.Next(1);
+                    push[i] = random.NextDouble() + 0.6;
+                }
+                else if (Time > 9 && Time <= 17)
                 {
                     pull[i] = random.Next(2);
                     push[i] = random.NextDouble();
                 }
-                else
-                {
-                    pull[i] = random.Next(3,6);
-                    push[i] = random.NextDouble();
-                }
+                
             }
             // Industrial area
             for (int i = third; i < third * 2; i++)
             {
-                if (Time <= 5 && Time >= 21)
+                if (Time <= 5 && Time >= 18)
                 {
                     pull[i] = random.Next(1);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() + 0.3;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 6 && Time <= 9)
                 {
-                    pull[i] = random.Next(6,10);
-                    push[i] = random.NextDouble();
+                    pull[i] = random.Next(7, 10);
+                    push[i] = random.NextDouble() - 0.5;
                 }
-                else
+                else if (Time > 9 && Time < 17)
                 {
-                    pull[i] = random.Next(3);
-                    push[i] = random.NextDouble();
+                    pull[i] = random.Next(4,7);
+                    push[i] = random.NextDouble() - 0.1;
                 }
             }
             // Recreational Area
             for (int i = third*2; i < nodes.Length; i++)
             {
-                if (Time <= 3 && Time >= 18)
+                if (Time <= 3 && Time > 18)
                 {
                     pull[i] = random.Next(5,9);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.2;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 10 && Time <= 18)
                 {
                     pull[i] = random.Next(3,5);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.1;
                 }
                 else
                 {
                     pull[i] = random.Next(1);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() + 0.5;
                 }
             }
         }
