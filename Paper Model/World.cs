@@ -47,8 +47,6 @@ namespace Paper_Model
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
-            maxWalkingDistance = 4f;
-            maxCyclingDistance = 12f;
             Time = 0;
             totalCarEmissions = 0f;
             size = nodes.Length;

@@ -176,6 +176,7 @@ namespace Paper_Model
         }
         private Node previousNode(int start, Node node)
         {
+            /*
             float distance = distances[start, node.index];
             
             for(int i =0;i<Length;i++)
@@ -191,9 +192,7 @@ namespace Paper_Model
                     }
                 }
             }
-            
-            return default;
-            /*
+            */
             float distance = distances[start, node.index];
             for (int i = 0; i < node.reverseNeighbor.Count; i++)
             {
