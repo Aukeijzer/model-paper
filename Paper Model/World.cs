@@ -47,6 +47,8 @@ namespace Paper_Model
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
+            maxWalkingDistance = 4f;
+            maxCyclingDistance = 12f;
             Time = 0;
             totalCarEmissions = 0f;
             size = nodes.Length;
@@ -67,6 +69,7 @@ namespace Paper_Model
         {
             updatePushPull();
             Time++;
+            if (Time > 24) Time = 1;
             totalCarEmissions = totalCarKM * carEmissions;
             List<Log> logs = movePeople();
             for (int i = 0; i < logs.Count; i++)
@@ -114,64 +117,67 @@ namespace Paper_Model
                 else if (vehicles[i] is Legs) legsUsage++;
             }
         }
-        private void updatePushPull()
+        private void updatePushPull()  //Whole function is magic numbers (except peak hours)
         {
             // Residential areas
             int third = nodes.Length / 3;
+            
             for (int i = 0; i < third; i++)
             {
-                if (Time <= 5 && Time >= 21)
+                
+                if (Time <= 5 && Time > 17)
                 {
                     pull[i] = random.Next(5,10);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.2;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 6 && Time <= 9)
+                {
+                    pull[i] = random.Next(1);
+                    push[i] = random.NextDouble() + 0.6;
+                }
+                else if (Time > 9 && Time <= 17)
                 {
                     pull[i] = random.Next(2);
                     push[i] = random.NextDouble();
                 }
-                else
-                {
-                    pull[i] = random.Next(3,6);
-                    push[i] = random.NextDouble();
-                }
+                
             }
             // Industrial area
             for (int i = third; i < third * 2; i++)
             {
-                if (Time <= 5 && Time >= 21)
+                if (Time <= 5 && Time >= 18)
                 {
                     pull[i] = random.Next(1);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() + 0.3;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 6 && Time <= 9)
                 {
-                    pull[i] = random.Next(6,10);
-                    push[i] = random.NextDouble();
+                    pull[i] = random.Next(7, 10);
+                    push[i] = random.NextDouble() - 0.5;
                 }
-                else
+                else if (Time > 9 && Time < 17)
                 {
-                    pull[i] = random.Next(3);
-                    push[i] = random.NextDouble();
+                    pull[i] = random.Next(4,7);
+                    push[i] = random.NextDouble() - 0.1;
                 }
             }
             // Recreational Area
             for (int i = third*2; i < nodes.Length; i++)
             {
-                if (Time <= 3 && Time >= 18)
+                if (Time <= 3 && Time > 18)
                 {
                     pull[i] = random.Next(5,9);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.2;
                 }
-                else if (Time >= 9 && Time <= 17)
+                else if (Time >= 10 && Time <= 18)
                 {
                     pull[i] = random.Next(3,5);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() - 0.1;
                 }
                 else
                 {
                     pull[i] = random.Next(1);
-                    push[i] = random.NextDouble();
+                    push[i] = random.NextDouble() + 0.5;
                 }
             }
         }

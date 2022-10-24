@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace Paper_Model
         public int Length;
         Node[] nodes;
         float[,] distances;
+        private int test;
         /// <summary>
         /// Note that this graph still needs to be initialized.
         /// </summary>
@@ -19,6 +21,7 @@ namespace Paper_Model
         {
             this.nodes = nodes;
             Length = nodes.Length;
+            test = 0;
             //set the distance between all nodes as infinity
             distances = new float[Length, Length];
             for (int x = 0; x < Length; x++)
@@ -174,6 +177,7 @@ namespace Paper_Model
         private Node previousNode(int start, Node node)
         {
             float distance = distances[start, node.index];
+            
             for(int i =0;i<Length;i++)
             {
                 if (distances[node.index, i] == float.MaxValue)
@@ -187,6 +191,7 @@ namespace Paper_Model
                     }
                 }
             }
+            
             return default;
             /*
             float distance = distances[start, node.index];
