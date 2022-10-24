@@ -176,23 +176,30 @@ namespace Paper_Model
             float distance = distances[start, node.index];
             for(int i =0;i<Length;i++)
             {
-                int neighborIndex = nodes[i].neighbors.IndexOf(node);
-                if (neighborIndex != -1)
+                if (distances[node.index, i] == float.MaxValue)
                 {
-                    float neighbor2This = distances[start, i] + nodes[i].distance2Neighbor[neighborIndex];
-                    if (neighbor2This == distance)
-                        return nodes[i];
+                    int neighborIndex = nodes[i].neighbors.IndexOf(node);
+                    if (neighborIndex != -1)
+                    {
+                        float neighbor2This = distances[start, i] + nodes[i].distance2Neighbor[neighborIndex];
+                        if (neighbor2This == distance)
+                            return nodes[i];
+                    }
                 }
             }
             return default;
             /*
-            for (int i = 0; i < neighbors.Count; i++)
+            float distance = distances[start, node.index];
+            for (int i = 0; i < node.reverseNeighbor.Count; i++)
             {
-                int neighbor = neighbors[i].index;
-                float neighbor2This = distances[start, neighbor] + distance2Neighbor[i];
+                Node neighbor = node.reverseNeighbor[i];
+                int neighborIndex = neighbor.index;
+                float neighbor2This = distances[start, neighborIndex] + 
+                    neighbor.distance2Neighbor[neighbor.reverseNeighborIndex[i]];
                 if (neighbor2This == distance)
-                    return neighbors[i];
+                    return neighbor;
             }
+            /*
             for (int i = 0; i < neighbors.Count; i++)
             {
                 int neighbor = neighbors[i].index;
@@ -201,10 +208,10 @@ namespace Paper_Model
                 if (neighbor2This == distance)
                     return neighbors[i];
             }
-
-            //If this happens something went wrong.
-            return default;
             */
+
+            //If we get here something went wrong.
+            throw new Exception();
         }
         public (List<float>,List<Node>) GetPath(Node start, Node end)
         {

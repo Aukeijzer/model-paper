@@ -9,8 +9,9 @@ namespace Paper_Model
     public class Node
     {
         public List<Node> neighbors = new List<Node>();
-        public List<Node> onewayNeighbor = new List<Node>();
         public List<float> distance2Neighbor = new List<float>();
+        public List<Node> reverseNeighbor = new List<Node>();
+        public List<int> reverseNeighborIndex = new List<int>();
         public int index;
         public override string ToString()
         {
@@ -48,6 +49,8 @@ namespace Paper_Model
                 distance2Neighbor.Add(node.distance2Neighbor[i] * scale);
                 neighbors.Add(node.neighbors[i]);
             }
+            reverseNeighbor = node.reverseNeighbor;
+            reverseNeighborIndex = node.reverseNeighborIndex;
         }
 
         public void updatedistances(MinHeap heap, float distance)
@@ -80,6 +83,8 @@ namespace Paper_Model
         {
             neighbors.Add(node);
             distance2Neighbor.Add(distance);
+            node.reverseNeighborIndex.Add(neighbors.Count - 1);
+            node.reverseNeighbor.Add(this);
         }
         /// <summary>
         /// creates and initializes an array of nodes.
@@ -208,8 +213,8 @@ namespace Paper_Model
                     return neighbors[i];
             }
 
-            //If this happens something went wrong.
-            return default;
+            //If we get here something went wrong.
+            throw new Exception();
         }
     }
 }

@@ -16,8 +16,6 @@ namespace Paper_Model
         private float carParkingCost;
         private float carEmissions;
         private float gasPrice;
-        private float maxWalkingDistance;
-        private float maxCyclingDistance;
         public static int Time;
         public static float totalCarEmissions;
         public static int carUsage;
@@ -49,8 +47,6 @@ namespace Paper_Model
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
-            maxWalkingDistance = 30f;
-            maxCyclingDistance = 120f;
             Time = 0;
             totalCarEmissions = 0f;
             size = nodes.Length;
@@ -91,25 +87,11 @@ namespace Paper_Model
         private float effortCost(int start, int end, Vehicle vehicle)
         {
             if (vehicle is Car)
-            {
                 return driving.d(start, end) + 2 * carParkingCost + walking.d(start,end)*carEmissions;
-            }
             else if (vehicle is Bike)
-            {
-                if (walking.d(start, end) < maxCyclingDistance)
-                    return cycling.d(start, end) + 2 * bikeParkingCost;
-                else
-                    return 1000000; //MAGIC NUMBERS
-                // NOTE: effortCost only works retroactively and doesnt influence the path taken in any way
-                // Furthermore it might be better to log the amount of "failed" travel plans instead of slapping an effort penalty on it.
-            }
+                return cycling.d(start, end) + 2 * bikeParkingCost;
             else
-            {
-                if (walking.d(start, end) < maxWalkingDistance)
-                    return walking.d(start, end);
-                else
-                    return 1000000; //MOAR MAGIC NUMBERS
-            }
+                return walking.d(start, end);
                 
         }
         private void executeLog(Log log)
