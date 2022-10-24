@@ -42,7 +42,7 @@ namespace Paper_Model
                 worldNodes[i] = new WorldNode(nodes[i]);
             for (int i = 0; i < nodes.Length / 3; i++)
             {
-                worldNodes[i].addFamily(5, 2, 4);
+                worldNodes[i].addFamily(1, 0, 0);
             }
             World world = new World(worldNodes);
             for (int i = 0; i < 24; i++)
@@ -62,9 +62,7 @@ namespace Paper_Model
                 bikeUsage.Add(World.bikeUsage);
                 carUsage.Add(World.carUsage);
                 series2.Points.AddXY(i, World.totalCarEmissions);
-                
             }
-            
         }
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)

@@ -152,7 +152,7 @@ namespace Paper_Model
                     if (vehicles[i] is Car)
                     {
                         carUsage++;
-                        //totalCarKM = Log.totalKM(log);
+                        totalCarKM = Log.totalKM(log);
                     }
                     if (vehicles[i] is Bike) bikeUsage++;
                 }
