@@ -82,13 +82,52 @@ namespace Paper_Model
         /// <returns></returns>
         private float effortCost(int start, int end, Vehicle vehicle)
         {
+            float travelTime; //in minutes
+            float physicalEffort;
+            float travelDistance = walking.d(start, end);
+            float monetaryCost;
+            float maxWalkingDistance = 3f;
+            float maxCyclingDistance = 10f;
+
             if (vehicle is Car)
-                return driving.d(start, end) + 2 * carParkingCost + distances.d(start,end)*(gasPrice+carEmissions);
+            {
+                int parkingTime = 3; //min
+                float averageCarLowSpeed = 0.60f; //Average road speed taking into account slower roads (km/min)
+                float averageCarSpeed = 0.75f; //Average road speed (km/min)
+                travelTime = 2 * parkingTime + 
+                             (0.20f*travelDistance * averageCarLowSpeed)+
+                             (0.80f*travelDistance * averageCarSpeed);
+                monetaryCost = travelDistance * gasPrice+
+                               2*carParkingCost;
+                physicalEffort = driving.d(start, end);
+                return driving.d(start, end) + 2 * carParkingCost + walking.d(start, end)*(gasPrice+carEmissions);
+            }
             else if (vehicle is Bike)
-                return cycling.d(start, end) + 2 * bikeParkingCost;
+            {
+                if (travelDistance <= maxCyclingDistance)
+                {
+                    return cycling.d(start, end) + 2 * bikeParkingCost;
+                }
+                else
+                {
+                    return 100000000;
+                }
+            }
+            else if (vehicle is Legs)
+            {
+                if (travelDistance <= maxWalkingDistance)
+                {
+                    return travelDistance;
+                }
+                else
+                {
+                    return 100000000;
+                }
+            }
             else
-                return walking.d(start, end);
-                
+            {
+                return 1000000000;
+            }
         }
         private void executeLog(Log log)
         {
