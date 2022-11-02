@@ -350,19 +350,15 @@ namespace Paper_Model
         public static float timer = 0;
         private Log movePerson(int origin, int destination, Person person)
         {
-            Graph effortGraph = createEffortGraph(origin, destination, person);
-            effortGraph.LazyMinSpanTree(origin, destination);
-            float totalEffort = effortGraph.d(origin, destination);
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            (List<float> efforts,List<Node> path) = effortGraph.GetPath(origin, destination);
+            Graph effortGraph = createEffortGraph(origin, destination, person);
             stopwatch.Stop();
             timer += stopwatch.ElapsedMilliseconds;
+            effortGraph.LazyMinSpanTree(origin, destination);
+            float totalEffort = effortGraph.d(origin, destination);
+            (List<float> efforts,List<Node> path) = effortGraph.GetPath(origin, destination);
             List<Vehicle> vehicles = new List<Vehicle>();
-            int x;
-            if (path.Count > 2)
-                x = 6;
-
             for (int i = 0; i<path.Count-1 ; i++)
             {
                 WorldNode start = nodes[path[i].index];
