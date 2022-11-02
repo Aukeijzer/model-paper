@@ -11,9 +11,9 @@ namespace Paper_Model
     {
         private int size;
         private WorldNode[] nodes;
-        private List<WorldNode> bikeParkingNodes = new List<WorldNode>();
-        private float bikeParkingCost;
         private List<WorldNode> carParkNodes = new List<WorldNode>();
+        private List<WorldNode> busStops = new List<WorldNode>();
+        private float bikeParkingCost;
         private float carParkingCost;
         private float carEmissions;
         private float gasPrice;
@@ -35,7 +35,7 @@ namespace Paper_Model
         private Graph cycling;
         private Graph driving;
 
-        public World(WorldNode[] nodes)
+        public World(WorldNode[] nodes, List<Node> buslines)
         {
             this.nodes = nodes;
             distances = new Graph(nodes);
@@ -54,14 +54,8 @@ namespace Paper_Model
             pull = new int[size];
             push = new double[size];
             for(int i = 0; i < size; i++)
-            {
-                WorldNode node = nodes[i];
-                if (node.bikePark)
-                    bikeParkingNodes.Add(node);
-                if (node.carPark)
-                    carParkNodes.Add(node);
-            }
-
+                if (nodes[i].carPark)
+                    carParkNodes.Add(nodes[i]);
         }
         //still buggy
         public List<Log> Tick()
@@ -89,7 +83,7 @@ namespace Paper_Model
         private float effortCost(int start, int end, Vehicle vehicle)
         {
             if (vehicle is Car)
-                return driving.d(start, end) + 2 * carParkingCost + walking.d(start,end)*(gasPrice+carEmissions);
+                return driving.d(start, end) + 2 * carParkingCost + distances.d(start,end)*(gasPrice+carEmissions);
             else if (vehicle is Bike)
                 return cycling.d(start, end) + 2 * bikeParkingCost;
             else
@@ -234,97 +228,75 @@ namespace Paper_Model
             }
             return logs;
         }
-        private Graph CreateEffortGraph(int origin, int destination, Person person)
-        {
-            List<Vehicle> vehicles = person.vehicles;
-            List<int> start = new List<int>();
-            List<int> end = new List<int>();
-            List<float> lengths = new List<float>();
-            List<int> start2 = new List<int>();
-            List<int> end2 = new List<int>();
-            List<float> lengths2 = new List<float>();
-            for (int i = 0; i < vehicles.Count; i++)
-                if (!vehicles[i].moving)
-                {
-                    Vehicle vehicle = vehicles[i];
-                    if (vehicle is Bike)
-                    {
-                        start.Add(vehicle.location);
-                        end.Add(vehicle.location + size);
-                        lengths.Add(bikeParkingCost);
-                    }
-                    if (vehicle is Car)
-                    {
-                        start2.Add(vehicle.location);
-                        end2.Add(vehicle.location + 2 * size);
-                        lengths2.Add(carParkingCost);
-                    }
-                }
-            Graph walkBikeGraph = new Graph(walking, cycling, start.ToArray(), end.ToArray(), lengths.ToArray());
-            Graph effortGraph = new Graph(walkBikeGraph, driving, start2.ToArray(), end2.ToArray(), lengths2.ToArray());
-            return effortGraph;
-        }
+        //TODO: still lots of code duplication in this
         private Graph createEffortGraph(int origin, int destination, Person person)
         {
             List<Vehicle> vehicles = person.vehicles;
+            //Keypoints are the destination and nodes which will get you to the destination faster
+            List<int> keypoints = new List<int>();
+            for (int i = 0; i < vehicles.Count; i++)
+                if(!vehicles[i].moving)
+                    keypoints.Add(vehicles[i].location);
+            for (int i = 0; i < busStops.Count; i++)
+                keypoints.Add(busStops[i].index);
+            keypoints.Add(destination);
+
             //Creating new graph
             List<int> start = new List<int>();
             List<int> end = new List<int>();
             List<float> lengths = new List<float>();
-            //walking from start to destination
-            start.Add(origin);
-            end.Add(destination);
-            lengths.Add(effortCost<Legs>(origin, destination));
-            for(int i = 0; i < vehicles.Count; i++)
-                if(!vehicles[i].moving) 
-                {
-                    Vehicle vehicle = vehicles[i];
-                    //walking to a vehicle
-                    start.Add(origin);
-                    end.Add(vehicle.location);
-                    lengths.Add(effortCost<Legs>(origin, vehicle.location));
-                    //driving to carpark
-                    if(vehicle is Car)
-                        for (int j = 0; j < carParkNodes.Count; j++)
-                        {
-                            int endIndex = carParkNodes[j].index;
-                            start.Add(vehicle.location);
-                            end.Add(endIndex);
-                            lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
-                        }
-                    //cycling to bikePark
-                    if (vehicle is Bike)
-                        for (int j = 0; j < bikeParkingNodes.Count; j++)
-                        {
-                            int endIndex = bikeParkingNodes[j].index;
-                            start.Add(vehicle.location);
-                            end.Add(endIndex);
-                            lengths.Add(effortCost(vehicle.location, endIndex,vehicle));
-                        }
-                }
-            for (int i = 0; i < bikeParkingNodes.Count; i++)
+
+            //Walking to keypoints
+            for(int i =0; i < keypoints.Count; i++)
             {
-                int bikeParkIndex = bikeParkingNodes[i].index;
-                //walking from bikepark to destination
-                start.Add(bikeParkIndex);
-                end.Add(destination);
-                lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
-                //walking from bikepark to carpark
-                for (int j = 0; j < carParkNodes.Count; j++)
+                int keypoint = keypoints[i];
+                start.Add(origin);
+                end.Add(keypoint);
+                lengths.Add(effortCost<Legs>(origin, keypoint));
+            }
+            for(int i = 0; i < vehicles.Count; i++)
+            {
+                int vehicle = vehicles[i].location;
+                //Driving to carParks
+                if (vehicles[i] is Car)
+                    for(int j = 0; j<carParkNodes.Count;j++)
                     {
-                        int carParkIndex = carParkNodes[j].index;
-                        start.Add(bikeParkIndex);
-                        end.Add(carParkIndex);
-                        lengths.Add(effortCost<Legs>(bikeParkIndex, destination));
+                        int carPark = carParkNodes[j].index;
+                        start.Add(vehicle);
+                        end.Add(carPark);
+                        lengths.Add(effortCost<Car>(vehicle, carPark));
+                    }    
+                //Cycling to other keypoints
+                if(vehicles[i] is Bike)
+                    for(int j = 0; j < keypoints.Count; j++)
+                    {
+                        int keypoint = keypoints[j];
+                        start.Add(vehicle);
+                        end.Add(keypoint);
+                        lengths.Add(effortCost<Bike>(vehicle, keypoint));
                     }
             }
-            for (int i = 0; i < carParkNodes.Count; i++)
+            //Walking from keypoints to keypoints (buses force us to do this)
+            for(int i = 0; i < keypoints.Count; i++)
+                for(int j = 0; j<keypoints.Count;j++)
+                {
+                    int keyStart = keypoints[i];
+                    int keyEnd = keypoints[j];
+                    start.Add(keyStart);
+                    end.Add(keyEnd);
+                    lengths.Add(effortCost<Legs>(keyStart, keyEnd));
+                }
+            //Walking from carParks to keypoints
+            for(int i = 0; i < carParkNodes.Count; i++)
             {
-                //walking from carpark to destination
-                int carParkIndex = carParkNodes[i].index;
-                start.Add(carParkIndex);
-                end.Add(destination);
-                lengths.Add(effortCost<Legs>(carParkIndex, destination));
+                int carPark = carParkNodes[i].index;
+                for(int j = 0; j<keypoints.Count;j++)
+                {
+                    int keypoint = keypoints[j];
+                    start.Add(carPark);
+                    end.Add(keypoint);
+                    lengths.Add(effortCost<Legs>(carPark, keypoint));
+                }
             }
             Node[] nodeArray = Node.createDirectedNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
             return new Graph(nodeArray);

@@ -38,23 +38,13 @@ namespace Paper_Model
             Node[] nodes = Node.createNodeGrid(X, Y, distance);
             Graph graph2 = new Graph(nodes);
             WorldNode[] worldNodes = new WorldNode[nodes.Length];
-            Random random = new Random();
             for (int i = 0; i < nodes.Length; i++)
                 worldNodes[i] = new WorldNode(nodes[i]);
             for (int i = 0; i < nodes.Length / 3; i++)
             {
-                int people = 0;
-                int car = 1;
-                int bike = 1;
-                while (people < car + bike - 1)
-                {
-                    people = random.Next(3, 7);
-                    car = random.Next(0, 3);
-                    bike = random.Next(3, 7);
-                }
-                worldNodes[i].addFamily(people, car, bike);
+                worldNodes[i].addFamily(5, 1, 5);
             }
-            World world = new World(worldNodes);
+            World world = new World(worldNodes, null);
             for (int i = 0; i < 24; i++)
             {
                 var logs = world.Tick();
