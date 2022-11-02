@@ -174,12 +174,12 @@ namespace Paper_Model
                     int thisNode = y * width + x;
                     start.Add(thisNode);
                     end.Add(thisNode + 1);
-                    //lengths.Add((float)random.NextDouble()*distance+1);
-                    lengths.Add(distance);
+                    lengths.Add((float)random.NextDouble()*distance+1);
+                    //lengths.Add(distance);
                     start.Add(thisNode);
                     end.Add(thisNode + width);
-                    //lengths.Add((float)random.NextDouble()*distance+1);
-                    lengths.Add(distance);
+                    lengths.Add((float)random.NextDouble()*distance+1);
+                    //lengths.Add(distance);
                 }
             //adding edges to bottom row
             for (int x = 0; x < width - 1; x++)

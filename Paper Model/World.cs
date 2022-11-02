@@ -42,8 +42,8 @@ namespace Paper_Model
             distances.Initialize();
             //TODO: add factors
             walking = new Graph(distances,1);
-            cycling = new Graph(distances,0.2f);
-            driving = new Graph(distances,0.03f);
+            cycling = new Graph(distances,0.3f);
+            driving = new Graph(distances,0.02f);
             bikeParkingCost = 1;
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
@@ -89,7 +89,7 @@ namespace Paper_Model
         private float effortCost(int start, int end, Vehicle vehicle)
         {
             if (vehicle is Car)
-                return driving.d(start, end) + 2 * carParkingCost + walking.d(start,end)*carEmissions;
+                return driving.d(start, end) + 2 * carParkingCost + walking.d(start,end)*(gasPrice+carEmissions);
             else if (vehicle is Bike)
                 return cycling.d(start, end) + 2 * bikeParkingCost;
             else
@@ -127,16 +127,16 @@ namespace Paper_Model
                 if (Time <= 5 && Time > 17)
                 {
                     pull[i] = random.Next(5,10);
-                    push[i] = random.NextDouble() - 0.2;
+                    push[i] = random.NextDouble();// - 0.2;
                 }
                 else if (Time >= 6 && Time <= 9)
                 {
-                    pull[i] = random.Next(1);
-                    push[i] = random.NextDouble() + 0.6;
+                    pull[i] = random.Next(2);
+                    push[i] = random.NextDouble();// + 0.6;
                 }
                 else if (Time > 9 && Time <= 17)
                 {
-                    pull[i] = random.Next(2);
+                    pull[i] = random.Next(3);
                     push[i] = random.NextDouble();
                 }
                 
@@ -146,18 +146,18 @@ namespace Paper_Model
             {
                 if (Time <= 5 && Time >= 18)
                 {
-                    pull[i] = random.Next(1);
-                    push[i] = random.NextDouble() + 0.3;
+                    pull[i] = random.Next(2);
+                    push[i] = random.NextDouble();// + 0.3;
                 }
                 else if (Time >= 6 && Time <= 9)
                 {
                     pull[i] = random.Next(7, 10);
-                    push[i] = random.NextDouble() - 0.5;
+                    push[i] = random.NextDouble();// - 0.5;
                 }
                 else if (Time > 9 && Time < 17)
                 {
                     pull[i] = random.Next(4,7);
-                    push[i] = random.NextDouble() - 0.1;
+                    push[i] = random.NextDouble();// - 0.1;
                 }
             }
             // Recreational Area
@@ -166,17 +166,17 @@ namespace Paper_Model
                 if (Time <= 3 && Time > 18)
                 {
                     pull[i] = random.Next(5,9);
-                    push[i] = random.NextDouble() - 0.2;
+                    push[i] = random.NextDouble();// - 0.2;
                 }
                 else if (Time >= 10 && Time <= 18)
                 {
                     pull[i] = random.Next(3,5);
-                    push[i] = random.NextDouble() - 0.1;
+                    push[i] = random.NextDouble();// - 0.1;
                 }
                 else
                 {
-                    pull[i] = random.Next(1);
-                    push[i] = random.NextDouble() + 0.5;
+                    pull[i] = random.Next(2);
+                    push[i] = random.NextDouble();// + 0.5;
                 }
             }
         }
@@ -226,7 +226,7 @@ namespace Paper_Model
                 WorldNode node = nodes[i];
                 //for every person in the node roll if they will move to a different one.
                 for (int j = 0; j < node.people.Count; j++)
-                    if (random.NextDouble() < push[i])
+                    if (random.NextDouble()-1 < push[i])
                     {
                         int destination = highestCulmative(pull, random.Next(maxPull));
                         logs.Add(movePerson(i, destination, node.people[j]));
