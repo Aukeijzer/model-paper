@@ -19,6 +19,7 @@ namespace Paper_Model
         private List<int> legsUsage = new List<int>();
         private List<int> bikeUsage = new List<int>();
         private List<int> carUsage = new List<int>();
+        private List<int> busUsage = new List<int>();
         private Series series1;
         private Series series2;
         public Form1()
@@ -37,6 +38,7 @@ namespace Paper_Model
         {
             Node[] nodes = Node.createNodeGrid(X, Y, distance);
             Graph graph2 = new Graph(nodes);
+
             WorldNode[] worldNodes = new WorldNode[nodes.Length];
             for (int i = 0; i < nodes.Length; i++)
                 worldNodes[i] = new WorldNode(nodes[i]);
@@ -44,7 +46,9 @@ namespace Paper_Model
             {
                 worldNodes[i].addFamily(5, 1, 5);
             }
-            World world = new World(worldNodes, null);
+            List<int> bus = new List<int>() { 0, 1, 2 };
+            List<List<int>> buses = new List<List<int>>() { bus };
+            World world = new World(worldNodes, buses);
             for (int i = 0; i < 24; i++)
             {
                 var logs = world.Tick();

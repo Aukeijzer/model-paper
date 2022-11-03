@@ -130,7 +130,14 @@ namespace Paper_Model
     {
         public override string ToString()
         {
-            return "Walking";
+            return "Walk";
+        }
+    }
+    public class Bus : Vehicle
+    {
+        public override string ToString()
+        {
+            return "Bus";
         }
     }
 }

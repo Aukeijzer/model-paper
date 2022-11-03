@@ -4,25 +4,33 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms.VisualStyles;
+//Alias
+using Path = System.Collections.Generic.List<Paper_Model.Node>;
 
 namespace Paper_Model
 {
     public class World
     {
-        private int size;
+        public int Size;
         private WorldNode[] nodes;
         private List<WorldNode> carParkNodes = new List<WorldNode>();
-        private List<WorldNode> busStops = new List<WorldNode>();
+        private List<WorldNode> busLines = new List<WorldNode>();
+
+        private float carEmissions;
         private float bikeParkingCost;
         private float carParkingCost;
-        private float carEmissions;
+        private float busWaitingCost;
+        private float busPrice;
         private float gasPrice;
+        
         public static int Time;
-        public static float totalCarEmissions;
+        
         public static int carUsage;
         public static int bikeUsage;
         public static int legsUsage;
+        
         public static float totalCarKM;
+        public static float totalCarEmissions;
 
         //The weight a node has in regards to getting people to move to that node
         private int[] pull;
@@ -35,13 +43,17 @@ namespace Paper_Model
         private Graph cycling;
         private Graph driving;
 
-        public World(WorldNode[] nodes, List<Node> buslines)
+        public World(WorldNode[] nodes, List<List<int>> buslines)
         {
             this.nodes = nodes;
             distances = new Graph(nodes);
             distances.Initialize();
-            //TODO: add factors
-            walking = new Graph(distances,1);
+            Graph preWalking = new Graph(distances,1);
+            //TODO: calc busCost
+            int busCost = 1;
+            float busFactor = 1;
+            walking = new Graph(preWalking.nodes, buslines, busCost, busFactor, distances);
+            walking.Initialize();
             cycling = new Graph(distances,0.3f);
             driving = new Graph(distances,0.02f);
             bikeParkingCost = 1;
@@ -50,12 +62,13 @@ namespace Paper_Model
             carEmissions = 0.1f; // 100g CO2 per km
             Time = 0;
             totalCarEmissions = 0f;
-            size = nodes.Length;
-            pull = new int[size];
-            push = new double[size];
-            for(int i = 0; i < size; i++)
+            Size = nodes.Length;
+            pull = new int[Size];
+            push = new double[Size];
+            for(int i = 0; i < Size; i++)
                 if (nodes[i].carPark)
                     carParkNodes.Add(nodes[i]);
+
         }
         //still buggy
         public List<Log> Tick()
@@ -88,7 +101,6 @@ namespace Paper_Model
             float monetaryCost;
             float maxWalkingDistance = 3f;
             float maxCyclingDistance = 10f;
-
             if (vehicle is Car)
             {
                 int parkingTime = 3; //min
@@ -131,7 +143,7 @@ namespace Paper_Model
         }
         private void executeLog(Log log)
         {
-            List<Node> path = log.path;
+            Path path = log.path;
             log.person.move(path[path.Count-1], nodes);
             List<Vehicle> vehicles = log.vehicles;
             for (int i = 0; i < vehicles.Count; i++)
@@ -216,11 +228,11 @@ namespace Paper_Model
         public struct Log
         {
             public Person person;
-            public List<Node> path;
+            public Path path;
             public float totalEffort;
             public List<Vehicle> vehicles;
             public List<float> efforts;
-            public Log(List<Node> path, float totalEffort, List<Vehicle> vehicles, Person person, List<float> efforts)
+            public Log(Path path, float totalEffort, List<Vehicle> vehicles, Person person, List<float> efforts)
             {
                 this.path = path;
                 this.totalEffort = totalEffort;
@@ -276,8 +288,8 @@ namespace Paper_Model
             for (int i = 0; i < vehicles.Count; i++)
                 if(!vehicles[i].moving)
                     keypoints.Add(vehicles[i].location);
-            for (int i = 0; i < busStops.Count; i++)
-                keypoints.Add(busStops[i].index);
+            for (int i = 0; i < busLines.Count; i++)
+                keypoints.Add(busLines[i].index);
             keypoints.Add(destination);
 
             //Creating new graph
@@ -337,7 +349,7 @@ namespace Paper_Model
                     lengths.Add(effortCost<Legs>(carPark, keypoint));
                 }
             }
-            Node[] nodeArray = Node.createDirectedNodeArray(size, start.ToArray(), end.ToArray(), lengths.ToArray());
+            Node[] nodeArray = Node.createDirectedNodeArray(Size, start.ToArray(), end.ToArray(), lengths.ToArray());
             return new Graph(nodeArray);
         }
         private Vehicle determineTravelType(int start, int end, float effort, Person person)
@@ -368,7 +380,7 @@ namespace Paper_Model
             timer += stopwatch.ElapsedMilliseconds;
             effortGraph.LazyMinSpanTree(origin, destination);
             float totalEffort = effortGraph.d(origin, destination);
-            (List<float> efforts,List<Node> path) = effortGraph.GetPath(origin, destination);
+            (List<float> efforts,Path path) = effortGraph.GetPath(origin, destination);
             List<Vehicle> vehicles = new List<Vehicle>();
             for (int i = 0; i<path.Count-1 ; i++)
             {

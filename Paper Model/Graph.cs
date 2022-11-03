@@ -10,9 +10,8 @@ namespace Paper_Model
     class Graph
     {
         public int Length;
-        Node[] nodes;
+        public Node[] nodes;
         float[,] distances;
-        private int test;
         /// <summary>
         /// Note that this graph still needs to be initialized.
         /// </summary>
@@ -21,7 +20,6 @@ namespace Paper_Model
         {
             this.nodes = nodes;
             Length = nodes.Length;
-            test = 0;
             //set the distance between all nodes as infinity
             distances = new float[Length, Length];
             for (int x = 0; x < Length; x++)
@@ -33,6 +31,31 @@ namespace Paper_Model
             Length = length;
             this.nodes = nodes;
             this.distances = distances;
+        }
+        public Graph(Node[] nodes, List<List<int>> busLines, int sunkCost, float distanceFactor, Graph distances)
+        {
+            List<Node> nodeList = nodes.ToList();
+            Length = nodeList.Count;
+            for(int i = 0; i<busLines.Count;i++)
+            {
+                List<int> busPath = busLines[i];
+                nodeList.Add(new Node(Length));
+                Node.addNeighbors(nodeList[busPath[0]], nodeList[Length],sunkCost);
+                Length++;
+                for(int j = 1; j<busPath.Count; j++)
+                {
+                    nodeList.Add(new Node(Length));
+                    Node.addNeighbors(nodeList[busPath[j]], nodeList[Length],sunkCost);
+                    float distance = distances.d(busPath[j - 1], busPath[j]) * distanceFactor;
+                    Node.addNeighbors(nodeList[Length - 1], nodeList[Length],distance);
+                    Length++;
+                }
+            }
+            this.nodes = nodeList.ToArray();
+            this.distances = new float[Length, Length];
+            for (int x = 0; x < Length; x++)
+                for (int y = 0; y < Length; y++)
+                    this.distances[x, y] = float.MaxValue;
         }
         public Graph(Graph oldGraph, float scale)
         {
