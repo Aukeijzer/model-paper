@@ -38,7 +38,7 @@ namespace Paper_Model
 
         private void button1_Click(object sender, EventArgs e)
         {
-            for(int k = 0; k < 2; k++)
+            for(int k = 0; k < 10; k++)
             {
                 Node[] nodes = Node.createNodeGrid(X, Y, distance);
                 Graph graph2 = new Graph(nodes);
@@ -46,7 +46,7 @@ namespace Paper_Model
                 WorldNode[] worldNodes = new WorldNode[nodes.Length];
                 for (int i = 0; i < X; i++)
                     for (int j = 0; j < Y; j++)
-                        worldNodes[i * Y + j].carPark = (i % 1 == 0) && (j % 1 == 0);
+                        worldNodes[i * Y + j].carPark = (i % 2 == 0) && (j % 2 == 0); //change 1 to 2 to have a park node once every four nodes or 3 for once every 9.
                 for (int i = 0; i < nodes.Length; i++)
                     worldNodes[i] = new WorldNode(nodes[i]);
                 for (int i = 0; i < nodes.Length / 3; i++)
