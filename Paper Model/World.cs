@@ -45,7 +45,7 @@ namespace Paper_Model
         private Graph driving;
         private Graph walking2;
 
-        public World(WorldNode[] nodes, List<List<int>> buslines)
+        public World(WorldNode[] nodes, List<List<int>> buslines,float gasPrice)
         {
             this.nodes = nodes;
             distances = new Graph(nodes);
@@ -61,7 +61,7 @@ namespace Paper_Model
             driving = new Graph(distances,1.95f);
             bikeParkingCost = 1;
             carParkingCost = 10f;
-            gasPrice = 0.14f; // 0.14 euro per km
+            gasPrice = 0.17f; // 0.14 euro per km
             carEmissions = 0.1f; // 100g CO2 per km
             Time = 0;
             totalCarEmissions = 0f;
