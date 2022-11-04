@@ -22,6 +22,8 @@ namespace Paper_Model
         private List<int> busUsage = new List<int>();
         private Series series1;
         private Series series2;
+        List<float[]> results = new List<float[]>();
+
         public Form1()
         {
             InitializeComponent();
@@ -36,41 +38,50 @@ namespace Paper_Model
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Node[] nodes = Node.createNodeGrid(X, Y, distance);
-            Graph graph2 = new Graph(nodes);
+            for(int k = 0; k < 2; k++)
+            {
+                Node[] nodes = Node.createNodeGrid(X, Y, distance);
+                Graph graph2 = new Graph(nodes);
 
-            WorldNode[] worldNodes = new WorldNode[nodes.Length];
-            for (int i = 0; i < nodes.Length; i++)
-                worldNodes[i] = new WorldNode(nodes[i]);
-            for (int i = 0; i < nodes.Length / 3; i++)
-            {
-                worldNodes[i].addFamily(5, 1, 5);
-            }
-            List<int> bus1 = new List<int>() { 40, 41, 42, 43, 44, 45 ,46 ,47 ,48, 49,
-             59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 40};
-            List<int> bus2 = new List<int>() { 4, 14, 24, 34, 44, 54 ,64 ,74 ,84, 94,
-             65, 85, 75, 65, 55, 45, 35, 25, 15, 5, 4};
-            List<List<int>> buses = new List<List<int>>() { bus1, bus2 };
-            List<List<int>> buses2 = new List<List<int>>() { };
-            World world = new World(worldNodes, buses2);
-            for (int i = 0; i < 24; i++)
-            {
-                var logs = world.Tick();
-                bool auke = false;
-                if (auke)
+                WorldNode[] worldNodes = new WorldNode[nodes.Length];
+                for (int i = 0; i < X; i++)
+                    for (int j = 0; j < Y; j++)
+                        worldNodes[i * Y + j].carPark = (i % 1 == 0) && (j % 1 == 0);
+                for (int i = 0; i < nodes.Length; i++)
+                    worldNodes[i] = new WorldNode(nodes[i]);
+                for (int i = 0; i < nodes.Length / 3; i++)
                 {
-                    for (int j = 0; j < logs.Count; j++)
-                    {
-                        textBox1.AppendText(logs[j].ToString() + Environment.NewLine);
-                    }
-                    textBox1.AppendText("---" + Environment.NewLine);
+                    worldNodes[i].addFamily(5, 1, 5);
                 }
-                textBox1.AppendText(i+" ");
-                legsUsage.Add(World.legsUsage);
-                bikeUsage.Add(World.bikeUsage);
-                carUsage.Add(World.carUsage);
-                busUsage.Add(World.busUsage);
-                series2.Points.AddXY(i, World.totalCarEmissions);
+                List<int> bus1 = new List<int>() { 40, 41, 42, 43, 44, 45 ,46 ,47 ,48, 49,
+                                                59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 40};
+                List<int> bus2 = new List<int>() { 4, 14, 24, 34, 44, 54 ,64 ,74 ,84, 94,
+                                                65, 85, 75, 65, 55, 45, 35, 25, 15, 5, 4};
+                List<List<int>> buses = new List<List<int>>() { bus1, bus2 };
+                List<List<int>> buses2 = new List<List<int>>() { };
+                World world = new World(worldNodes, buses2);
+                float[] runResults = new float[24];
+                for (int i = 0; i < 24; i++)
+                {
+                    var logs = world.Tick();
+                    bool auke = false;
+                    if (auke)
+                    {
+                        for (int j = 0; j < logs.Count; j++)
+                        {
+                            textBox1.AppendText(logs[j].ToString() + Environment.NewLine);
+                        }
+                        textBox1.AppendText("---" + Environment.NewLine);
+                    }
+                    textBox1.AppendText(i + " ");
+                    legsUsage.Add(World.legsUsage);
+                    bikeUsage.Add(World.bikeUsage);
+                    carUsage.Add(World.carUsage);
+                    busUsage.Add(World.busUsage);
+                    runResults[i] = World.totalCarEmissions;
+                    series2.Points.AddXY(i, World.totalCarEmissions);
+                }
+                results.Add(runResults);
             }
         }
 
@@ -99,6 +110,41 @@ namespace Paper_Model
                 series1.Points.AddXY("Driving", carUsage[(int)numericUpDown4.Value-1]);
                 series1.Points.AddXY("Bus", busUsage[(int)numericUpDown4.Value-1]);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            float[] average = new float[24];
+            for (int i = 0; i < 24; i++)
+            {
+                average[i] = 0;
+                for (int j = 0; j < results.Count; j++)
+                    average[i] += results[j][i];
+                average[i] = average[i] / 10f;
+                textBox1.AppendText(average[i].ToString() + Environment.NewLine);
+            }
+            textBox1.AppendText("\n Standard deviations: \n");
+
+            float[] sd = new float[24];
+            for (int i = 0; i < 24; i++)
+            {
+                sd[i] = 0;
+                for (int j = 0; j < results.Count; j++)
+                    sd[i] += Math.Abs(average[i] - results[j][i]);
+                sd[i] = sd[i] / 10f;
+                textBox1.AppendText(sd[i].ToString() + Environment.NewLine);
+            }
+            textBox1.AppendText("\n --- \n ");
+            float trueAverage = 0;
+            for (int i = 0; i < 24; i++)
+                trueAverage += average[i];
+            trueAverage = trueAverage / 24f;
+            float trueSD = 0;
+            for (int i = 0; i < 24; i++)
+                trueSD += sd[i];
+            trueSD = trueSD / 24f;
+            textBox1.AppendText($"Average is: " + trueAverage.ToString() + Environment.NewLine);
+            textBox1.AppendText($"SD is: " + trueSD.ToString() + Environment.NewLine);
         }
     }
 }
