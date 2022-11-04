@@ -97,6 +97,7 @@ namespace Paper_Model
                 series1.Points.AddXY("Walking", legsUsage[(int)numericUpDown4.Value-1]);
                 series1.Points.AddXY("Cycling", bikeUsage[(int)numericUpDown4.Value-1]);
                 series1.Points.AddXY("Driving", carUsage[(int)numericUpDown4.Value-1]);
+                series1.Points.AddXY("Bus", busUsage[(int)numericUpDown4.Value-1]);
             }
         }
     }

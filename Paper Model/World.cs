@@ -164,6 +164,7 @@ namespace Paper_Model
                         totalCarKM = Log.totalKM(log);
                     }
                     if (vehicles[i] is Bike) bikeUsage++;
+                    if (vehicles[i] is Bus) busUsage++;
                 }
                 else if (vehicles[i] is Legs) legsUsage++;
             }
