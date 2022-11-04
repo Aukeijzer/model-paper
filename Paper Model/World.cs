@@ -15,7 +15,6 @@ namespace Paper_Model
         public int Size;
         private WorldNode[] nodes;
         private List<WorldNode> carParkNodes = new List<WorldNode>();
-        private List<WorldNode> busLines = new List<WorldNode>();
         private Graph preWalking;
         private float carEmissions;
         private float bikeParkingCost;
@@ -297,8 +296,6 @@ namespace Paper_Model
             for (int i = 0; i < vehicles.Count; i++)
                 if(!vehicles[i].moving)
                     keypoints.Add(vehicles[i].location);
-            for (int i = 0; i < busLines.Count; i++)
-                keypoints.Add(busLines[i].index);
             keypoints.Add(destination);
 
             //Creating new graph

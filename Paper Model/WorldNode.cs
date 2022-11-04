@@ -13,7 +13,6 @@ namespace Paper_Model
         {
             people = new List<Person>();
             vehicles = new List<Vehicle>();
-            bikePark = true;
             carPark = true;
         }
         public WorldNode(Node node) : this(node.index)
@@ -24,7 +23,6 @@ namespace Paper_Model
             reverseNeighborDistance = node.reverseNeighborDistance;
         }
         public List<Person> people;
-        public bool bikePark;
         public bool carPark;
         private List<Vehicle> vehicles;
         public void addFamily(int peopleAmount, int carAmount, int bikesAmount)
