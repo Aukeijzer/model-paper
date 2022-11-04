@@ -15,7 +15,7 @@ namespace Paper_Model
     {
         private int X = 10;
         private int Y = 10;
-        private int distance = 10;
+        private int distance = 2;
         private List<int> legsUsage = new List<int>();
         private List<int> bikeUsage = new List<int>();
         private List<int> carUsage = new List<int>();
@@ -65,6 +65,7 @@ namespace Paper_Model
                 legsUsage.Add(World.legsUsage);
                 bikeUsage.Add(World.bikeUsage);
                 carUsage.Add(World.carUsage);
+                busUsage.Add(World.busUsage);
                 series2.Points.AddXY(i, World.totalCarEmissions);
             }
         }

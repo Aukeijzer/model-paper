@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Windows.Forms.VisualStyles;
 //Alias
@@ -15,7 +16,7 @@ namespace Paper_Model
         private WorldNode[] nodes;
         private List<WorldNode> carParkNodes = new List<WorldNode>();
         private List<WorldNode> busLines = new List<WorldNode>();
-
+        private Graph preWalking;
         private float carEmissions;
         private float bikeParkingCost;
         private float carParkingCost;
@@ -28,7 +29,8 @@ namespace Paper_Model
         public static int carUsage;
         public static int bikeUsage;
         public static int legsUsage;
-        
+        public static int busUsage;
+
         public static float totalCarKM;
         public static float totalCarEmissions;
 
@@ -42,20 +44,22 @@ namespace Paper_Model
         private Graph walking;
         private Graph cycling;
         private Graph driving;
+        private Graph walking2;
 
         public World(WorldNode[] nodes, List<List<int>> buslines)
         {
             this.nodes = nodes;
             distances = new Graph(nodes);
             distances.Initialize();
-            Graph preWalking = new Graph(distances,1);
+            preWalking = new Graph(distances,1);
             //TODO: calc busCost
             int busCost = 1;
             float busFactor = 1;
             walking = new Graph(preWalking.nodes, buslines, busCost, busFactor, distances);
             walking.Initialize();
-            cycling = new Graph(distances,0.3f);
-            driving = new Graph(distances,0.02f);
+            walking2 = new Graph(distances, 13.22f);
+            cycling = new Graph(distances,4.13f);
+            driving = new Graph(distances,1.95f);
             bikeParkingCost = 1;
             carParkingCost = 10f;
             gasPrice = 0.14f; // 0.14 euro per km
@@ -86,6 +90,7 @@ namespace Paper_Model
         {
             return effortCost(start, end, new T());
         }
+
         /// <summary>
         /// Looks at the effort cost for going from A to B using a Vehicle
         /// </summary>
@@ -93,26 +98,29 @@ namespace Paper_Model
         /// <param name="end"></param>
         /// <param name="vehicle"></param>
         /// <returns></returns>
+        private float monToTime(float cost)
+        {
+            float hourSalary = 24f;
+            float mins = (cost / hourSalary)*60;
+            return mins;
+        }
         private float effortCost(int start, int end, Vehicle vehicle)
         {
             float travelTime; //in minutes
             float physicalEffort;
-            float travelDistance = walking.d(start, end);
+            float travelDistance = distances.d(start, end);
             float monetaryCost;
-            float maxWalkingDistance = 3f;
-            float maxCyclingDistance = 10f;
+            float maxWalkingDistance = 4f;
+            float maxCyclingDistance = 15f;
             if (vehicle is Car)
             {
-                int parkingTime = 3; //min
-                float averageCarLowSpeed = 0.60f; //Average road speed taking into account slower roads (km/min)
-                float averageCarSpeed = 0.75f; //Average road speed (km/min)
-                travelTime = 2 * parkingTime + 
-                             (0.20f*travelDistance * averageCarLowSpeed)+
-                             (0.80f*travelDistance * averageCarSpeed);
-                monetaryCost = travelDistance * gasPrice+
-                               2*carParkingCost;
+                int parkingTime = 2; //min
+                float averageCarSpeed = 0.5f; //Average road speed (km/min) -- 30kmh
+                travelTime = 2 * parkingTime +
+                             travelDistance * averageCarSpeed;
+                monetaryCost = travelDistance * gasPrice + 2*carParkingCost;
                 physicalEffort = driving.d(start, end);
-                return driving.d(start, end) + 2 * carParkingCost + walking.d(start, end)*(gasPrice+carEmissions);
+                return travelTime+monToTime(monetaryCost)+physicalEffort;
             }
             else if (vehicle is Bike)
             {
@@ -129,7 +137,7 @@ namespace Paper_Model
             {
                 if (travelDistance <= maxWalkingDistance)
                 {
-                    return travelDistance;
+                    return walking2.d(start,end);
                 }
                 else
                 {
@@ -354,14 +362,14 @@ namespace Paper_Model
         }
         private Vehicle determineTravelType(int start, int end, float effort, Person person)
         {
-            if (effort == effortCost<Car>(start, end))
+            if (Math.Abs(effort - effortCost<Car>(start, end)) < 0.1)
             {
                 List<Car> cars = person.getSpecificVehicle<Car>();
                 for (int j = 0; j<cars.Count; j++)
                     if (!cars[j].moving && cars[j].location == start)
                         return cars[j];
             }
-            else if (effort == effortCost<Bike>(start, end))
+            else if (Math.Abs(effort - effortCost<Bike>(start, end)) < 0.1)
             {
                 List<Bike> bikes = person.getSpecificVehicle<Bike>();
                 for (int j = 0; j<bikes.Count; j++)
@@ -371,6 +379,8 @@ namespace Paper_Model
             return new Legs();
         }
         public static float timer = 0;
+        
+
         private Log movePerson(int origin, int destination, Person person)
         {
             Stopwatch stopwatch = new Stopwatch();
