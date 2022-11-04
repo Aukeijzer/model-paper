@@ -46,9 +46,13 @@ namespace Paper_Model
             {
                 worldNodes[i].addFamily(5, 1, 5);
             }
-            List<int> bus = new List<int>() { 0, 1, 2 };
-            List<List<int>> buses = new List<List<int>>() { bus };
-            World world = new World(worldNodes, buses);
+            List<int> bus1 = new List<int>() { 40, 41, 42, 43, 44, 45 ,46 ,47 ,48, 49,
+             59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 40};
+            List<int> bus2 = new List<int>() { 4, 14, 24, 34, 44, 54 ,64 ,74 ,84, 94,
+             65, 85, 75, 65, 55, 45, 35, 25, 15, 5, 4};
+            List<List<int>> buses = new List<List<int>>() { bus1, bus2 };
+            List<List<int>> buses2 = new List<List<int>>() { };
+            World world = new World(worldNodes, buses2);
             for (int i = 0; i < 24; i++)
             {
                 var logs = world.Tick();
